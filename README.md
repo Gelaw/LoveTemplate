@@ -18,6 +18,17 @@ Limites connues de love.js : pas de threads en mode compatibilite (`-c`),
 pas de shaders (rely on fixed pipeline), audio stream parfois capricieux,
 `love.system.getOS()` renvoie `"Web"`.
 
+**Version LÖVE embarquee : 11.4.** Le paquet npm `love.js` compile LÖVE
+11.4, pas 11.5. Si `src/conf.lua` declare `t.version = "11.5"`, le jeu
+affiche au lancement web l'avertissement :
+
+> This game indicates it was made for version '11.5' of LOVE. It may not
+> be compatible with the running version (11.4).
+
+Le jeu fonctionne malgre tout ; `conf.lua` est regle sur `"11.4"` pour
+supprimer l'avertissement. Si vous developpez en desktop avec LÖVE 11.5,
+gardez en tete que le web reste en 11.4 (API quasi identique).
+
 ## Structure
 
 ```
