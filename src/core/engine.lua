@@ -60,6 +60,13 @@ function engine.init(setup)
   engine.bindings = {}
   engine.gameover = false
   engine.simTime = 0
+  -- caméra remise à zéro : un init doit être totalement reproductible
+  -- (les tests manipulent camera.scale/mode, il ne faut pas qu'ils fuient
+  -- dans les snapshots suivants)
+  core.camera.x, core.camera.y = 0, 0
+  core.camera.scale, core.camera.angle = 1, 0
+  core.camera.mode = nil
+  core.camera.shaker = { steps = {}, n = 1, stepTimer = 0, shakeTimer = 0 }
   core.entities.clear()
   core.particles.clear()
   core.ui.clear()
