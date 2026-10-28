@@ -8,9 +8,28 @@
 --   lua tests/run.lua golden        (génère tests/golden/golden.txt)
 --------------------------------------------------------------------
 
--- Chemins : le projet est la racine ; on rend src/ et tests/ requêtables.
-local root = (arg[0] or "") :match("^(.-)[^/\\]+$") or "./"
-root = root == "" and "./" or root
+-- Chemins : la racine est le dossier qui contient src/ et tests/,
+-- quel que soit le CWD d'appel. On sonde : (1) le parent du chemin de
+-- script (tests/..), (2) le CWD courant, (3) le parent du CWD (cas où
+-- on lance "lua run.lua" depuis tests/).
+local script = arg[0] or "tests/run.lua"
+local scriptDir = script:match("^(.-)[^/\\]+$") or ""
+local candidates = {}
+if scriptDir ~= "" then
+  table.insert(candidates, (scriptDir:gsub("tests[/\\]$", "")))
+  table.insert(candidates, scriptDir)
+end
+table.insert(candidates, "./")
+table.insert(candidates, "../")
+local root = "./"
+for _, dir in ipairs(candidates) do
+  local probe = io.open(dir .. "src/domain/init.lua", "r")
+  if probe then
+    probe:close()
+    root = dir
+    break
+  end
+end
 package.path = table.concat({
   root .. "src/?.lua",
   root .. "src/?/init.lua",
@@ -18,6 +37,9 @@ package.path = table.concat({
   root .. "tests/?.lua",
   package.path,
 }, ";")
+
+-- Racine exportée pour les modules de test (golden check, etc.).
+_TESTS_ROOT = root
 
 -- Domain et core d'abord (les tests y font référence via les globals).
 require("domain")
@@ -50,8 +72,8 @@ if mode == "golden" then
   -- Mode spécial : (re)génère le golden file de non-régression.
   -- Équivalent à scripts/update-golden.sh, en Lua pur.
   local simulation = require("tests.regression.simulation")
-  simulation.writeGolden("tests/golden/golden.txt")
-  print("Golden file écrit : tests/golden/golden.txt")
+  simulation.writeGolden(root .. "tests/golden/golden.txt")
+  print("Golden file écrit : " .. root .. "tests/golden/golden.txt")
   return
 end
 

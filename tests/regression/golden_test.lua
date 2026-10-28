@@ -8,7 +8,7 @@
 local harness = require("tests.lib.harness")
 local simulation = require("tests.regression.simulation")
 
-local GOLDEN_PATH = "tests/golden/golden.txt"
+local GOLDEN_PATH = (_TESTS_ROOT or "./") .. "tests/golden/golden.txt"
 
 harness.describe("non-régression (golden file)", function()
 
