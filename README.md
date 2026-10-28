@@ -114,11 +114,30 @@ l'intégration bout-en-bout se fait via le boot complet.
 
 ## Prerequis
 
-- [LÖVE 11.x](https://love2d.org/) (commande `love` dans le PATH) — dev desktop
-- `luac` (paquet `lua` de votre distribution) — check syntaxique
-- `zip` — packaging `.love`
-- [Node.js](https://nodejs.org/) >= 12 — build web (`npx love.js`)
-- `python3` — serveur local de test
+| Usage | Outil | Rôle |
+|---|---|---|
+| `scripts/run.sh` | [LÖVE 11.x](https://love2d.org/) (`love` dans le PATH) | dev desktop |
+| `scripts/check.sh` | `luac` (avec le paquet `lua`/`luajit`) | check syntaxique |
+| `scripts/test.sh` | `luajit` ou `lua` | suite de tests (le script auto-detecte) |
+| `scripts/package.sh` | `zip` | packaging `.love` |
+| `scripts/web.sh` | [Node.js](https://nodejs.org/) >= 12 (`npx`) | build web — le paquet npm `love.js` (moteur LÖVE 11.5 en WebAssembly) est telecharge par `npx --yes` au premier build, rien a compiler |
+| `scripts/serve.sh` | `python3` | serveur local statique (obligatoire : le WASM ne charge pas en `file://`) |
+
+Le minimum pour le web seul : `nodejs` + `zip` + `python3`.
+
+### Fedora / RHEL (dnf)
+
+```bash
+# le minimum pour build web + servir en local
+sudo dnf install nodejs zip python3
+
+# + dev desktop et tests
+sudo dnf install love luajit
+```
+
+Si le RPM `love` de votre Fedora est trop ancien, le RPM officiel
+(love-11.5-1.x86_64.rpm sur love2d.org) s'installe pareil :
+`sudo dnf install ./love-*.rpm`.
 
 ## Utilisation
 
