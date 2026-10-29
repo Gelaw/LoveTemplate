@@ -42,19 +42,29 @@ function adapter.buildBackend()
   }
 end
 
--- Branche le backend et initialise l'engine avec la config du projet.
-function adapter.boot(projectSetup)
+-- Branche le backend, applique la config fenêtre du projet (game.config)
+-- et initialise l'engine avec le setup du projet (game.setup).
+function adapter.boot(projectSetup, config)
   core.attach(adapter.buildBackend())
   local api = core.api()
+  if config then
+    love.window.setMode(config.width, config.height, {
+      resizable = config.resizable,
+      vsync = config.vsync,
+      title = config.title,
+    })
+  end
   api.setFont(api.newFont(11))
   api.setBackgroundColor(.4, .4, .4)
   core.engine.init(projectSetup)
 end
 
 -- ---- Callbacks LÖVE (traduction d'événements) ----
+-- (main.lua délègue directement à adapter.* ; voir src/main.lua)
 
 function adapter.load(arg)
-  adapter.boot(main.projectSetup)
+  local game = require("game")
+  adapter.boot(game.setup, game.config)
 end
 
 function adapter.update(dt)

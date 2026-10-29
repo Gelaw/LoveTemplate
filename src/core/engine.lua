@@ -48,7 +48,6 @@ end
 -- couches entités/particules/UI, puis appelle projectSetup() du projet.
 function engine.init(setup)
   local api = core.api()
-  api.setFullscreenMode()
   engine.width = api.getWidth()
   engine.height = api.getHeight()
   engine.projectSetup = setup

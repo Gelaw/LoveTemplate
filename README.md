@@ -31,12 +31,22 @@ gardez en tete que le web reste en 11.4 (API quasi identique).
 
 ## Structure
 
+**Règle d'or pour dupliquer le projet** : tout ce qui est projet
+(gameplay, entités, config fenêtre, assets) vit dans **`src/game/`**.
+Le reste (`main.lua`, `conf.lua`, `domain/`, `core/`, `adapter/`,
+`base.lua`, `scripts/`, `tests/`) est le TEMPLATE figé — dupliquez le
+repo et ne modifiez que `src/game/` pour travailler sur un prototype.
+Pour mettre à jour le template plus tard, un merge/rebase suffit car
+vos modifications ne le touchent pas.
+
 ```
 love2d-web-template/
 ├── src/                        # le jeu (ce dossier devient le .love)
-│   ├── conf.lua                # config LÖVE (fenêtre, modules)
-│   ├── main.lua                # point d'entrée + logique projet (démo)
-│   ├── base.lua                # façade compat API historique (facultatif)
+│   ├── conf.lua                # TEMPLATE — applique game.config (ne pas toucher)
+│   ├── main.lua                # TEMPLATE — câble layers + adapter (ne pas toucher)
+│   ├── base.lua                # TEMPLATE — façade compat API historique (facultatif)
+│   ├── game/                   # ★ VOTRE PROJET — le seul dossier à modifier
+│   │   └── init.lua            #   game.config (fenêtre) + game.setup (gameplay)
 │   ├── domain/                 # COUCHE DOMAINE — 100% pure, zéro LÖVE
 │   │   ├── init.lua            #   assemble + merge math helpers dans math
 │   │   ├── mathx.lua           #   math pures, RNG injecté pour les tests
@@ -95,7 +105,7 @@ Le projet suit une séparation en trois couches, pensée pour la testabilité :
 
 ```
 ┌───────────────────────────────────────────────┐
-│ main.lua (logique projet)                      │
+│ main.lua (TEMPLATE) → game/ (VOTRE PROJET)    │
 └─────────────┬─────────────────────────────────┘
               │ utilise
 ┌─────────────▼──────────────┐  ┌──────────────────────────────┐
@@ -116,7 +126,8 @@ Le projet suit une séparation en trois couches, pensée pour la testabilité :
 - `core/` peut requérir domain, mais touche l'extérieur UNIQUEMENT via
   `core.api()` (le backend injecté par l'adapter)
 - `adapter/love2d.lua` est le SEUL fichier autorisé à référencer `love.*`
-- `main.lua` est mince : il câble et contient la logique spécifique projet
+- `game/` contient toute la logique projet ; `main.lua` (template) se contente
+  de câbler les couches et de déléguer à `game.setup` / `game.config`
 
 **Pourquoi** : chaque couche est testable isolément avec un coût différent.
 Le domain se teste avec du Lua nu (rapide, exhaustif), le core avec un
@@ -262,7 +273,7 @@ car le backend graphique est mocké et le RNG est injecté/seedé :
 
 - `love.timer.getTime` et le gameplay ne changent pas ; le canvas s'adapte
   a la taille du navigateur.
-- La demo (`main.lua`) n'utilise que des formes vectorielles : aucun asset
+- La demo (`src/game/init.lua`) n'utilise que des formes vectorielles : aucun asset
   requis, elle tourne telle quelle desktop et web.
 - Pour un jeu reel, remplacez `projectSetup()` et ajoutez vos assets dans
   `src/` (ils seront inclus dans le `.love` puis dans le `.data` web).
