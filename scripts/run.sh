@@ -9,4 +9,14 @@ if ! command -v love >/dev/null 2>&1; then
   echo "Installez LÖVE 11.x : https://love2d.org/" >&2
   exit 1
 fi
+
+# Sous Wayland, le backend SDL2 remonte parfois SDL_SCANCODE_UNKNOWN pour
+# certaines touches des layouts non-QWERTY (AZERTY, BÉPO...), ce qui casse
+# les bindings en scancodes (isScancodeDown ne voit qu'une partie du
+# clavier). XWayland (x11) utilise une table keycode->scancode fiable.
+# On force donc x11 sauf si l'utilisateur impose son propre backend.
+if [ -z "${SDL_VIDEODRIVER:-}" ]; then
+  export SDL_VIDEODRIVER=x11
+fi
+
 exec love "$GAME_DIR"
