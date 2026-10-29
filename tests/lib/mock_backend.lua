@@ -45,10 +45,11 @@ function mock.new(config)
     end,
     draw = function(img, quad, x, y) record("draw") end,
     getTime = function() return m.time end,
-    -- polling scancode : retourne faux par defaut (les tests simulent
-    -- plutot les evenements via engine.onBindPressed/onBindReleased,
-    -- comme le fait l'adapter reel avec love.keypressed/keyreleased).
+    -- polling clavier : faux par defaut (les tests simulent plutot les
+    -- evenements via engine.onBindPressed/onBindReleased, comme l'adapter
+    -- reel avec love.keypressed/keyreleased).
     isScancodeDown = function(scancode) return false end,
+    isBindKeyDown = function(scancode) return false end,
     setFullscreenMode = function() record("setMode") end,
     quit = function() m.quitters = m.quitters + 1 end,
     loadFile = function(name)

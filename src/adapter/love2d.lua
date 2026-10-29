@@ -31,8 +31,15 @@ function adapter.buildBackend()
     draw         = function(...) g.draw(...) end,
     -- temps
     getTime      = function() return love.timer.getTime() end,
-    -- clavier (polling scancode ; les événements passent par adapter.key*)
+    -- clavier (polling ; les événements passent par adapter.key*)
     isScancodeDown = function(scancode) return love.keyboard.isScancodeDown(scancode) end,
+    -- Fallback layout-local : sur web AZERTY, Emscripten peut dériver les
+    -- scancodes du caractère produit (touche gravée Z -> scancode "z") ; la
+    -- traduction inverse permet au bind physique "w" de répondre.
+    isBindKeyDown = function(scancode)
+      local key = love.keyboard.getKeyFromScancode(scancode)
+      return key ~= nil and love.keyboard.isDown(key)
+    end,
     -- fenêtre
     setFullscreenMode = function() love.window.setMode(0, 0) end,
     quit         = function() love.event.quit() end,

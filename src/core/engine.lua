@@ -49,14 +49,26 @@ function engine.onBindReleased(scancode)
   engine.bindsDown[scancode] = nil
 end
 
--- Un binding d'action est-il actif ? (union : événements + polling)
+-- Un binding d'action est-il actif ?
+-- Union de TROIS sources, car aucune n'est fiable partout :
+--   1. événements keypressed/keyreleased (scancodes corrects sur desktop
+--      Wayland, où le polling peut rater des touches en layout non-QWERTY)
+--   2. polling isScancodeDown (position physique ; fiable web QWERTY)
+--   3. polling isDown(getKeyFromScancode) (touche localisée ; piège du web
+--      AZERTY : Emscripten peut dériver les scancodes du caractère produit,
+--      donc sur un clavier AZERTY la touche gravée Z remonte scancode "z" —
+--      la traduction inverse getKeyFromScancode("w")="z" + isDown("z")
+--      rattrape ce cas)
+-- Il suffit qu'UNE source soit correcte sur la plateforme pour que le bind
+-- réponde. Coût : trois lookups O(1) par frame et par action.
 function engine.isBindDown(action)
   local scancode = engine.bindings[action]
   if not scancode then return false end
   if engine.bindsDown[scancode] then return true end
   local api = core.api()
-  if api.isScancodeDown then
-    return api.isScancodeDown(scancode) == true
+  if api.isScancodeDown and api.isScancodeDown(scancode) then return true end
+  if api.isBindKeyDown then
+    return api.isBindKeyDown(scancode) == true
   end
   return false
 end

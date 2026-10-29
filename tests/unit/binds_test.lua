@@ -62,6 +62,38 @@ harness.describe("core.engine bindings (scancodes + événements)", function()
     engine.init(function() end) -- réinit complète
     harness.assert_false(engine.isBindDown("down"))
   end)
+
+  harness.it("3e source : fallback isBindKeyDown (layout local)", function()
+    -- Simule le web AZERTY : scancodes dérivés du caractère produit,
+    -- donc isScancodeDown("w") est faux, mais la touche localisée
+    -- correspondant au bind physique répond (isBindKeyDown).
+    local m2 = mock.new()
+    m2.backend.isScancodeDown = function(sc) return false end
+    m2.backend.isBindKeyDown = function(sc)
+      -- mapping scancode physique -> touche AZERTY effective
+      local azerty = { w = "z", a = "q", s = "s", d = "d" }
+      return azerty[sc] == "z" -- seule la touche gravée Z est tenue
+    end
+    core.attach(m2.backend)
+    local engine = core.engine
+    engine.bindings = {}
+    engine.bindsDown = {}
+    engine.addBind("w", "up")
+    engine.addBind("a", "left")
+    harness.assert_true(engine.isBindDown("up"))    -- via fallback layout
+    harness.assert_false(engine.isBindDown("left")) -- q non tenue
+  end)
+
+  harness.it("union : le polling scancode seul suffit aussi", function()
+    local m3 = mock.new()
+    m3.backend.isScancodeDown = function(sc) return sc == "d" end
+    core.attach(m3.backend)
+    local engine = core.engine
+    engine.bindings = {}
+    engine.bindsDown = {}
+    engine.addBind("d", "right")
+    harness.assert_true(engine.isBindDown("right"))
+  end)
 end)
 
 return harness
