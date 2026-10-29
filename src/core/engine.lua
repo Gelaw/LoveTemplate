@@ -34,50 +34,38 @@ function engine.getBindOf(action)
 end
 
 -- État des touches suivi par ÉVÉNEMENTS (keypressed/keyreleased, en
--- scancodes). Complète le polling isScancodeDown, qui sous Wayland +
--- layout non-QWERTY peut échouer (SDL remonte SDL_SCANCODE_UNKNOWN) :
--- les événements, eux, portent toujours le bon scancode.
+-- TOUCHES (lettre produite)). double filet : les événements complètent
+-- le polling isDown, qui peut être faillible selon la plateforme.
 engine.bindsDown = {}
 
--- À appeler depuis l'adapter sur love.keypressed (scancode).
-function engine.onBindPressed(scancode)
-  engine.bindsDown[scancode] = true
+-- À appeler depuis l'adapter sur love.keypressed (key).
+function engine.onBindPressed(key)
+  engine.bindsDown[key] = true
 end
 
--- À appeler depuis l'adapter sur love.keyreleased (scancode).
-function engine.onBindReleased(scancode)
-  engine.bindsDown[scancode] = nil
+-- À appeler depuis l'adapter sur love.keyreleased (key).
+function engine.onBindReleased(key)
+  engine.bindsDown[key] = nil
 end
 
--- Un binding d'action est-il actif ?
--- Union de TROIS sources, car aucune n'est fiable partout :
---   1. événements keypressed/keyreleased (scancodes corrects sur desktop
---      Wayland, où le polling peut rater des touches en layout non-QWERTY)
---   2. polling isScancodeDown (position physique ; fiable web QWERTY)
---   3. polling isDown(getKeyFromScancode) (touche localisée ; piège du web
---      AZERTY : Emscripten peut dériver les scancodes du caractère produit,
---      donc sur un clavier AZERTY la touche gravée Z remonte scancode "z" —
---      la traduction inverse getKeyFromScancode("w")="z" + isDown("z")
---      rattrape ce cas)
--- Il suffit qu'UNE source soit correcte sur la plateforme pour que le bind
--- réponde. Coût : trois lookups O(1) par frame et par action.
+-- Un binding d'action est-il actif ? (union : événements + polling)
 function engine.isBindDown(action)
-  local scancode = engine.bindings[action]
-  if not scancode then return false end
-  if engine.bindsDown[scancode] then return true end
+  local key = engine.bindings[action]
+  if not key then return false end
+  if engine.bindsDown[key] then return true end
   local api = core.api()
-  if api.isScancodeDown and api.isScancodeDown(scancode) then return true end
-  if api.isBindKeyDown then
-    return api.isBindKeyDown(scancode) == true
+  if api.isKeyDown then
+    return api.isKeyDown(key) == true
   end
   return false
 end
 
--- Bindings en SCANCODES (position physique des touches) : addBind()
--- attend un scancode, pas un key. Un scancode "w" désigne la touche
--- physique W = Z sur un clavier AZERTY : WASD/QWERTY et ZQSD/AZERTY
--- se correspondent automatiquement, quel que soit le layout système.
--- Pour afficher la vraie touche localisée : getKeyFromScancode(scancode).
+-- Bindings en TOUCHES (lettre produite par le clavier, ex. "z" sur un
+-- AZERTY). Approche volontairement NAÏVE : on ignore la position physique
+-- (scancodes) — les scancodes se sont révélés non fiables selon les
+-- plateformes (polling SDL/Wayland incomplet sur layouts non-QWERTY,
+-- scancodes web dérivés du caractère). Si votre jeu vise plusieurs
+-- layouts, prévoyez un écran d'options pour re-binder les touches.
 
 -- Charge et exécute un fichier Lua sans crasher (niveaux, scripts éditables).
 -- En test, le backend fournit un loader mémoire ; en prod, love.filesystem.

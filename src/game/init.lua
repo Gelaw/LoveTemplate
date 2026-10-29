@@ -22,12 +22,12 @@ game.config = {
 function game.setup()
   local engine = core.engine
 
-  -- Bindings projet — en SCANCODES (position physique des touches).
-  -- "w" = touche physique W, c'est-à-dire Z sur un clavier AZERTY :
-  -- la même position joue en WASD (QWERTY) et ZQSD (AZERTY).
+  -- Bindings projet — en TOUCHES (lettres produites). Réglé pour AZERTY
+  -- (ZQSD) : un joueur QWERTY changera ici pour WASD (ou prévoyez un
+  -- écran d'options). Voir la note dans core/engine.lua sur l'approche.
   engine.addBind("escape", "quit")
-  engine.addBind("w", "up")
-  engine.addBind("a", "left")
+  engine.addBind("z", "up")
+  engine.addBind("q", "left")
   engine.addBind("s", "down")
   engine.addBind("d", "right")
 
@@ -38,8 +38,7 @@ function game.setup()
     speed = 260,
     update = function(self, dt)
       local dx, dy = 0, 0
-      -- isBindDown : union du suivi événementiel et du polling — fiable
-      -- sous Wayland (où le polling seul peut rater des scancodes).
+      -- isBindDown : union du suivi événementiel et du polling isDown.
       if engine.isBindDown("left")  then dx = dx - 1 end
       if engine.isBindDown("right") then dx = dx + 1 end
       if engine.isBindDown("up")    then dy = dy - 1 end
@@ -65,18 +64,12 @@ function game.setup()
     })
   end
 
-  -- HUD de démo + diagnostic clavier : affiche les scancodes tenus
+  -- HUD de démo
   engine.addDrawFunction(function()
     local api = core.api()
     api.origin()
     api.setColor(1, 1, 1)
-    api.print("ZQSD/WASD pour bouger, touchez les caisses.", 12, 12)
-    -- Décommentez pour diagnostiquer le clavier (scancodes tenus) :
-    local held = {}
-    for _, action in ipairs({"up", "left", "down", "right", "quit"}) do
-      if engine.isBindDown(action) then table.insert(held, action .. "(" .. engine.getBindOf(action) .. ")") end
-    end
-    api.print("binds actifs: " .. table.concat(held, ", "), 12, 30)
+    api.print("ZQSD pour bouger, touchez les caisses.", 12, 12)
   end, 9)
 
   -- Émetteur de particules de démo

@@ -48,8 +48,7 @@ function mock.new(config)
     -- polling clavier : faux par defaut (les tests simulent plutot les
     -- evenements via engine.onBindPressed/onBindReleased, comme l'adapter
     -- reel avec love.keypressed/keyreleased).
-    isScancodeDown = function(scancode) return false end,
-    isBindKeyDown = function(scancode) return false end,
+    isKeyDown = function(key) return false end,
     setFullscreenMode = function() record("setMode") end,
     quit = function() m.quitters = m.quitters + 1 end,
     loadFile = function(name)

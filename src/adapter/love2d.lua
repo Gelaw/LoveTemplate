@@ -31,15 +31,8 @@ function adapter.buildBackend()
     draw         = function(...) g.draw(...) end,
     -- temps
     getTime      = function() return love.timer.getTime() end,
-    -- clavier (polling ; les événements passent par adapter.key*)
-    isScancodeDown = function(scancode) return love.keyboard.isScancodeDown(scancode) end,
-    -- Fallback layout-local : sur web AZERTY, Emscripten peut dériver les
-    -- scancodes du caractère produit (touche gravée Z -> scancode "z") ; la
-    -- traduction inverse permet au bind physique "w" de répondre.
-    isBindKeyDown = function(scancode)
-      local key = love.keyboard.getKeyFromScancode(scancode)
-      return key ~= nil and love.keyboard.isDown(key)
-    end,
+    -- clavier (polling de la touche ; les événements passent par adapter.key*)
+    isKeyDown = function(key) return love.keyboard.isDown(key) end,
     -- fenêtre
     setFullscreenMode = function() love.window.setMode(0, 0) end,
     quit         = function() love.event.quit() end,
@@ -85,17 +78,16 @@ function adapter.draw()
 end
 
 function adapter.keypressed(key, scancode)
-  -- Les événements portent toujours le bon SCANCODE (position physique),
-  -- même quand le polling Wayland échoue sur certains layouts : on
-  -- alimente le suivi événementiel du moteur.
-  if scancode then core.engine.onBindPressed(scancode) end
-  if scancode == core.engine.getBindOf("quit") then
+  -- Suivi événementiel de la TOUCHE (lettre produite) ; complète le
+  -- polling isDown qui peut être faillible selon la plateforme.
+  if key then core.engine.onBindPressed(key) end
+  if key == core.engine.getBindOf("quit") then
     love.event.quit()
   end
 end
 
 function adapter.keyreleased(key, scancode)
-  if scancode then core.engine.onBindReleased(scancode) end
+  if key then core.engine.onBindReleased(key) end
 end
 
 function adapter.mousepressed(x, y, button)

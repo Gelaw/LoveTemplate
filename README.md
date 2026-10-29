@@ -227,10 +227,14 @@ hebergeur statique (GitHub Pages, itch.io, Netlify...). Sur itch.io, cochez
   quads ; `anim:update(dt)`, `anim:draw()`
 
 ### Divers
-- `addBind(key, action)` / `getBindOf(action)` — bindings clavier, en
-  SCANCODES (position physique) : indépendant du layout AZERTY/QWERTY
-  (lisez avec `love.keyboard.isScancodeDown`, affichez avec
-  `love.keyboard.getKeyFromScancode`)
+- `addBind(key, action)` / `getBindOf(action)` / `isBindDown(action)` —
+  bindings clavier en TOUCHES (lettre produite : "z" = Z sur AZERTY).
+  Approche volontairement naïve : les scancodes (position physique) se
+  sont révélés non fiables selon plateformes (polling SDL/Wayland
+  incomplet en layout non-QWERTY, scancodes web dérivés du caractère).
+  La démo est réglée ZQSD ; un joueur QWERTY re-binde en WASD (ou
+  prévoyez un écran d'options). `isBindDown` fait l'union du suivi
+  événementiel (keypressed/keyreleased) et du polling isDown.
 - `safeLoadAndRun(file)` — charge un .lua sans crasher (niveaux, scripts)
 - Math : `math.dist, math.angle, math.clamp, math.round, math.normalize,
   math.prandom, math.sign, math.rsign, lerp, cerp`, etc.
