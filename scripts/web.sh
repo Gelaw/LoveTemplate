@@ -26,15 +26,11 @@ if ! command -v npx >/dev/null 2>&1; then
   exit 1
 fi
 
-if [ ! -f dist/*.love ] 2>/dev/null; then
-  echo "--> Construction du .love d'abord..."
-  scripts/package.sh "$NAME"
-fi
-
 LOVE_FILE="dist/${NAME}.love"
-if [ ! -f "$LOVE_FILE" ]; then
-  scripts/package.sh "$NAME"
-fi
+# On reconstruit TOUJOURS le .love : sinon un build web repackerait un
+# .love obsolète (code source modifié depuis le dernier package) — le
+# clean n'est donc jamais nécessaire avant un web.sh.
+scripts/package.sh "$NAME"
 
 echo "--> Packaging web avec love.js (titre: ${NAME}, memoire: ${MEMORY} octets)..."
 rm -rf "$OUT_DIR"
