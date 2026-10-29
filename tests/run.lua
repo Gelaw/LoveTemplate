@@ -60,6 +60,7 @@ if mode == "all" or mode == "unit" then
   table.insert(suites, {"unit/ui", "tests.unit.ui_test"})
   table.insert(suites, {"unit/audio", "tests.unit.audio_test"})
   table.insert(suites, {"unit/engine", "tests.unit.engine_test"})
+  table.insert(suites, {"unit/binds", "tests.unit.binds_test"})
 end
 if mode == "all" or mode == "regression" then
   table.insert(suites, {"regression/golden", "tests.regression.golden_test"})

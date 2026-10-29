@@ -33,6 +33,34 @@ function engine.getBindOf(action)
   return engine.bindings[action]
 end
 
+-- État des touches suivi par ÉVÉNEMENTS (keypressed/keyreleased, en
+-- scancodes). Complète le polling isScancodeDown, qui sous Wayland +
+-- layout non-QWERTY peut échouer (SDL remonte SDL_SCANCODE_UNKNOWN) :
+-- les événements, eux, portent toujours le bon scancode.
+engine.bindsDown = {}
+
+-- À appeler depuis l'adapter sur love.keypressed (scancode).
+function engine.onBindPressed(scancode)
+  engine.bindsDown[scancode] = true
+end
+
+-- À appeler depuis l'adapter sur love.keyreleased (scancode).
+function engine.onBindReleased(scancode)
+  engine.bindsDown[scancode] = nil
+end
+
+-- Un binding d'action est-il actif ? (union : événements + polling)
+function engine.isBindDown(action)
+  local scancode = engine.bindings[action]
+  if not scancode then return false end
+  if engine.bindsDown[scancode] then return true end
+  local api = core.api()
+  if api.isScancodeDown then
+    return api.isScancodeDown(scancode) == true
+  end
+  return false
+end
+
 -- Bindings en SCANCODES (position physique des touches) : addBind()
 -- attend un scancode, pas un key. Un scancode "w" désigne la touche
 -- physique W = Z sur un clavier AZERTY : WASD/QWERTY et ZQSD/AZERTY
@@ -63,6 +91,7 @@ function engine.init(setup)
   for i = 1, 9 do engine.draws[i] = {} end
   engine.updates = {}
   engine.bindings = {}
+  engine.bindsDown = {}
   engine.gameover = false
   engine.simTime = 0
   -- caméra remise à zéro : un init doit être totalement reproductible

@@ -10,13 +10,10 @@ if ! command -v love >/dev/null 2>&1; then
   exit 1
 fi
 
-# Sous Wayland, le backend SDL2 remonte parfois SDL_SCANCODE_UNKNOWN pour
-# certaines touches des layouts non-QWERTY (AZERTY, BÉPO...), ce qui casse
-# les bindings en scancodes (isScancodeDown ne voit qu'une partie du
-# clavier). XWayland (x11) utilise une table keycode->scancode fiable.
-# On force donc x11 sauf si l'utilisateur impose son propre backend.
-if [ -z "${SDL_VIDEODRIVER:-}" ]; then
-  export SDL_VIDEODRIVER=x11
-fi
-
+# Contexte Wayland/NVIDIA : sur certaines stacks (GLX + nvidia-drm), forcer
+# XWayland via SDL_VIDEODRIVER=x11 casse le contexte GL (GLXBadCurrentWindow).
+# On ne force donc PLUS x11 par défaut : l'input reste fiable grâce au
+# suivi événementiel des scancodes (engine.isBindDown, voir core/engine).
+# Si votre session a des problèmes graphiques, vous pouvez tester :
+#   SDL_VIDEODRIVER=x11 ./scripts/run.sh
 exec love "$GAME_DIR"

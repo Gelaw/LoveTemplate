@@ -31,6 +31,8 @@ function adapter.buildBackend()
     draw         = function(...) g.draw(...) end,
     -- temps
     getTime      = function() return love.timer.getTime() end,
+    -- clavier (polling scancode ; les événements passent par adapter.key*)
+    isScancodeDown = function(scancode) return love.keyboard.isScancodeDown(scancode) end,
     -- fenêtre
     setFullscreenMode = function() love.window.setMode(0, 0) end,
     quit         = function() love.event.quit() end,
@@ -76,11 +78,17 @@ function adapter.draw()
 end
 
 function adapter.keypressed(key, scancode)
-  -- Comparaison sur le SCANCODE (position physique), indépendant du
-  -- layout clavier (AZERTY/QWERTY/BÉPO...).
+  -- Les événements portent toujours le bon SCANCODE (position physique),
+  -- même quand le polling Wayland échoue sur certains layouts : on
+  -- alimente le suivi événementiel du moteur.
+  if scancode then core.engine.onBindPressed(scancode) end
   if scancode == core.engine.getBindOf("quit") then
     love.event.quit()
   end
+end
+
+function adapter.keyreleased(key, scancode)
+  if scancode then core.engine.onBindReleased(scancode) end
 end
 
 function adapter.mousepressed(x, y, button)

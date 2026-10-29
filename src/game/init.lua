@@ -38,10 +38,12 @@ function game.setup()
     speed = 260,
     update = function(self, dt)
       local dx, dy = 0, 0
-      if love.keyboard.isScancodeDown(engine.getBindOf("left"))  then dx = dx - 1 end
-      if love.keyboard.isScancodeDown(engine.getBindOf("right")) then dx = dx + 1 end
-      if love.keyboard.isScancodeDown(engine.getBindOf("up"))    then dy = dy - 1 end
-      if love.keyboard.isScancodeDown(engine.getBindOf("down"))  then dy = dy + 1 end
+      -- isBindDown : union du suivi événementiel et du polling — fiable
+      -- sous Wayland (où le polling seul peut rater des scancodes).
+      if engine.isBindDown("left")  then dx = dx - 1 end
+      if engine.isBindDown("right") then dx = dx + 1 end
+      if engine.isBindDown("up")    then dy = dy - 1 end
+      if engine.isBindDown("down")  then dy = dy + 1 end
       dx, dy = domain.mathx.normalize(dx, dy)
       self.x = self.x + dx * self.speed * dt
       self.y = self.y + dy * self.speed * dt
@@ -71,10 +73,10 @@ function game.setup()
     api.print("ZQSD/WASD pour bouger, touchez les caisses.", 12, 12)
     -- Décommentez pour diagnostiquer le clavier (scancodes tenus) :
     local held = {}
-    for _, sc in ipairs({"w", "a", "s", "d", "escape"}) do
-      if love.keyboard.isScancodeDown(sc) then table.insert(held, sc) end
+    for _, action in ipairs({"up", "left", "down", "right", "quit"}) do
+      if engine.isBindDown(action) then table.insert(held, action .. "(" .. engine.getBindOf(action) .. ")") end
     end
-    api.print("scancodes: " .. table.concat(held, ", "), 12, 30)
+    api.print("binds actifs: " .. table.concat(held, ", "), 12, 30)
   end, 9)
 
   -- Émetteur de particules de démo
