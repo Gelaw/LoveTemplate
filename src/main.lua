@@ -18,7 +18,7 @@ end
 
 function love.update(dt)            adapter.update(dt) end
 function love.draw()                adapter.draw() end
-function love.keypressed(key)       adapter.keypressed(key) end
+function love.keypressed(...)        adapter.keypressed(...) end
 function love.mousepressed(...)      adapter.mousepressed(...) end
 function love.mousereleased(...)     adapter.mousereleased(...) end
 function love.mousemoved(...)        adapter.mousemoved(...) end

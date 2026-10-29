@@ -75,8 +75,10 @@ function adapter.draw()
   core.engine.draw()
 end
 
-function adapter.keypressed(key)
-  if key == core.engine.getBindOf("quit") then
+function adapter.keypressed(key, scancode)
+  -- Comparaison sur le SCANCODE (position physique), indépendant du
+  -- layout clavier (AZERTY/QWERTY/BÉPO...).
+  if scancode == core.engine.getBindOf("quit") then
     love.event.quit()
   end
 end

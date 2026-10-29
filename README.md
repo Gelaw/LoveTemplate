@@ -109,15 +109,15 @@ Le projet suit une séparation en trois couches, pensée pour la testabilité :
 └─────────────┬─────────────────────────────────┘
               │ utilise
 ┌─────────────▼──────────────┐  ┌──────────────────────────────┐
-│ CORE (moteur)              │  │ ADAPTER (love2d.lua)          │
+│ CORE (moteur)              │  │ ADAPTER (love2d.lua)         │
 │ engine, camera, entities,  │◄─│ SEUL endroit qui touche      │
 │ particles, ui, audio       │  │ love.* ; fournit le backend  │
 └─────────────┬──────────────┘  └──────────────────────────────┘
               │ dépend de        (en test : mock_backend.lua)
 ┌─────────────▼──────────────┐
 │ DOMAIN (pur)               │
-│ mathx, geometry, state    │  ← zéro dépendance, testable avec
-│ règles, scoring, IA...    │    du Lua nu, sans moteur graphique
+│ mathx, geometry, state     │  ← zéro dépendance, testable avec
+│ règles, scoring, IA...     │    du Lua nu, sans moteur graphique
 └────────────────────────────┘
 ```
 
@@ -227,7 +227,10 @@ hebergeur statique (GitHub Pages, itch.io, Netlify...). Sur itch.io, cochez
   quads ; `anim:update(dt)`, `anim:draw()`
 
 ### Divers
-- `addBind(key, action)` / `getBindOf(action)` — bindings clavier
+- `addBind(key, action)` / `getBindOf(action)` — bindings clavier, en
+  SCANCODES (position physique) : indépendant du layout AZERTY/QWERTY
+  (lisez avec `love.keyboard.isScancodeDown`, affichez avec
+  `love.keyboard.getKeyFromScancode`)
 - `safeLoadAndRun(file)` — charge un .lua sans crasher (niveaux, scripts)
 - Math : `math.dist, math.angle, math.clamp, math.round, math.normalize,
   math.prandom, math.sign, math.rsign, lerp, cerp`, etc.
@@ -239,7 +242,7 @@ Trois familles de tests, toutes exécutables SANS LÖVE (`scripts/test.sh`),
 car le backend graphique est mocké et le RNG est injecté/seedé :
 
 | Famille | Où | Quoi | Quand l'écrire |
-|---|---|---|---|---|
+|---|---|---|---|
 | **Unitaires** | `tests/unit/*_test.lua` | Une fonction d'un module domain/core isolée (clamp, dist, hit-test UI, cycle de vie particule...) | En même temps que la fonction (TDD possible, le domain tourne en Lua nu) |
 | **Non-régression** | `tests/regression/` + `tests/golden/golden.txt` | Une simulation déterministe complète (RNG seedé, dt fixe) produisant un snapshot d'état final comparé au golden file | Dès qu'il y a du gameplay ; mettre à jour UNIQUEMENT via `scripts/update-golden.sh` après revue manuelle du nouveau snapshot |
 | **Intégration** | `tests/integration/` | L'assemblage complet : boot engine + projectSetup + 60 frames update/draw, interactions croisées (collisions dans la boucle, UI consommée, caméra follow, façade compat) | Quand on ajoute un sous-système ou une interaction entre deux couches |

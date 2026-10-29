@@ -22,7 +22,9 @@ game.config = {
 function game.setup()
   local engine = core.engine
 
-  -- Bindings projet
+  -- Bindings projet — en SCANCODES (position physique des touches).
+  -- "w" = touche physique W, c'est-à-dire Z sur un clavier AZERTY :
+  -- la même position joue en WASD (QWERTY) et ZQSD (AZERTY).
   engine.addBind("escape", "quit")
   engine.addBind("w", "up")
   engine.addBind("a", "left")
@@ -36,10 +38,10 @@ function game.setup()
     speed = 260,
     update = function(self, dt)
       local dx, dy = 0, 0
-      if love.keyboard.isDown(engine.getBindOf("left"))  then dx = dx - 1 end
-      if love.keyboard.isDown(engine.getBindOf("right")) then dx = dx + 1 end
-      if love.keyboard.isDown(engine.getBindOf("up"))    then dy = dy - 1 end
-      if love.keyboard.isDown(engine.getBindOf("down"))  then dy = dy + 1 end
+      if love.keyboard.isScancodeDown(engine.getBindOf("left"))  then dx = dx - 1 end
+      if love.keyboard.isScancodeDown(engine.getBindOf("right")) then dx = dx + 1 end
+      if love.keyboard.isScancodeDown(engine.getBindOf("up"))    then dy = dy - 1 end
+      if love.keyboard.isScancodeDown(engine.getBindOf("down"))  then dy = dy + 1 end
       dx, dy = domain.mathx.normalize(dx, dy)
       self.x = self.x + dx * self.speed * dt
       self.y = self.y + dy * self.speed * dt

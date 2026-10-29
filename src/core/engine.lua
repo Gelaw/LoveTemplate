@@ -33,6 +33,12 @@ function engine.getBindOf(action)
   return engine.bindings[action]
 end
 
+-- Bindings en SCANCODES (position physique des touches) : addBind()
+-- attend un scancode, pas un key. Un scancode "w" désigne la touche
+-- physique W = Z sur un clavier AZERTY : WASD/QWERTY et ZQSD/AZERTY
+-- se correspondent automatiquement, quel que soit le layout système.
+-- Pour afficher la vraie touche localisée : getKeyFromScancode(scancode).
+
 -- Charge et exécute un fichier Lua sans crasher (niveaux, scripts éditables).
 -- En test, le backend fournit un loader mémoire ; en prod, love.filesystem.
 function engine.safeLoadAndRun(name)
