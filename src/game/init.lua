@@ -63,12 +63,18 @@ function game.setup()
     })
   end
 
-  -- HUD de démo
+  -- HUD de démo + diagnostic clavier : affiche les scancodes tenus
   engine.addDrawFunction(function()
     local api = core.api()
     api.origin()
     api.setColor(1, 1, 1)
     api.print("ZQSD/WASD pour bouger, touchez les caisses.", 12, 12)
+    -- Décommentez pour diagnostiquer le clavier (scancodes tenus) :
+    local held = {}
+    for _, sc in ipairs({"w", "a", "s", "d", "escape"}) do
+      if love.keyboard.isScancodeDown(sc) then table.insert(held, sc) end
+    end
+    api.print("scancodes: " .. table.concat(held, ", "), 12, 30)
   end, 9)
 
   -- Émetteur de particules de démo
