@@ -48,10 +48,10 @@ function adapter.boot(projectSetup, config)
   core.attach(adapter.buildBackend())
   local api = core.api()
   if config then
+    if config.title then love.window.setTitle(config.title) end
     love.window.setMode(config.width, config.height, {
       resizable = config.resizable,
       vsync = config.vsync,
-      title = config.title,
     })
   end
   api.setFont(api.newFont(11))
