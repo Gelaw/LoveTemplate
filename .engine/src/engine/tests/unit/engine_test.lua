@@ -1,6 +1,6 @@
 --------------------------------------------------------------------
 -- tests/unit/engine_test.lua : tests UNITAIRES — orchestrateur :
--- calques, bindings, chargement sûr, gameover fige la logique.
+-- calques, bindings, chargement sûr.
 --------------------------------------------------------------------
 local harness = require("engine.tests.lib.harness")
 local mock = require("engine.tests.lib.mock_backend")
@@ -23,15 +23,6 @@ harness.describe("core.engine", function()
     engine.addUpdateFunction(cb)
     engine.update(0.123)
     harness.assert_eq(got, 0.123)
-  end)
-
-  harness.it("gameover : update ne fait plus rien", function()
-    local called = false
-    engine.addUpdateFunction(function(dt) called = true end)
-    engine.gameover = true
-    engine.update(0.016)
-    harness.assert_false(called)
-    engine.gameover = false
   end)
 
   harness.it("safeLoadAndRun : chunk fourni par le backend", function()

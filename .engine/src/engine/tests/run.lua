@@ -57,7 +57,6 @@ local suites = {}
 if mode == "all" or mode == "unit" then
   table.insert(suites, {"unit/mathx", "engine.tests.unit.mathx_test"})
   table.insert(suites, {"unit/geometry", "engine.tests.unit.geometry_test"})
-  table.insert(suites, {"unit/state", "engine.tests.unit.state_test"})
   table.insert(suites, {"unit/camera", "engine.tests.unit.camera_test"})
   table.insert(suites, {"unit/entities", "engine.tests.unit.entities_test"})
   table.insert(suites, {"unit/particles", "engine.tests.unit.particles_test"})
@@ -73,10 +72,12 @@ if mode == "all" or mode == "integration" then
   table.insert(suites, {"integration/boot", "engine.tests.integration.boot_test"})
   table.insert(suites, {"integration/compat", "engine.tests.integration.compat_test"})
   -- Tests PROJET (dossier tests/ à la racine) : dépendent de game/
-  local f = io.open(root .. "tests/setup_test.lua", "r")
-  if f then
-    f:close()
-    table.insert(suites, {"project/setup", "setup_test"})
+  for _, t in ipairs({"setup_test", "state_test"}) do
+    local f = io.open(root .. "tests/" .. t .. ".lua", "r")
+    if f then
+      f:close()
+      table.insert(suites, {"project/" .. t:gsub("_test", ""), t})
+    end
   end
 end
 if mode == "golden" then

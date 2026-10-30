@@ -36,7 +36,8 @@ LoveTemplate/
 ├── game/                    # ★ VOTRE JEU — le seul dossier à modifier
 │   ├── main.lua             #   point d'entrée (TEMPLATE, ne pas toucher)
 │   ├── conf.lua             #   config LÖVE (TEMPLATE, applique setup.config)
-│   └── setup.lua            #   ★ config fenêtre + initialisation du gameplay
+│   ├── setup.lua            #   ★ config fenêtre + initialisation du gameplay
+│   └── state.lua            #   exemple : état de jeu pur (score, vies)
 ├── tests/                   # ★ VOS tests (dépendent de game/ ; voir tests/README.md)
 ├── scripts/                 # outillage (build/run/test/lint, ne pas toucher)
 │   ├── run.sh               #   lance le jeu (dev)
@@ -54,8 +55,7 @@ LoveTemplate/
 │       ├── base.lua         #   façade compat API historique
 │       ├── domain/          #   COUCHE DOMAINE — 100% pure, zéro LÖVE
 │       │   ├── mathx.lua    #     math pures, RNG injecté pour les tests
-│       │   ├── geometry.lua #     hitbox, intersections, entitiesCollide
-│       │   └── state.lua    #     état de jeu pur (score, vies, règles)
+│       │   └── geometry.lua #     hitbox, intersections, entitiesCollide
 │       ├── core/            #   COUCHE CORE — moteur, backend injecté
 │       │   ├── engine.lua   #     boucle, 9 calques, bindings, safeLoad
 │       │   ├── camera.lua   #     follow/moveTo/shake (via backend)
@@ -156,6 +156,9 @@ scripts/test.sh unit         # seulement les unitaires
 # 2c. Lint statique (requiert luacheck)
 scripts/lint.sh
 
+# CI : GitHub Actions lance check + tests (lua5.1 ET luajit) + lint
+# a chaque push/PR — voir .github/workflows/ci.yml
+
 # 3. Construire le .love (distribuable desktop)
 scripts/package.sh monjeu        # -> dist/monjeu.love
 
@@ -205,8 +208,6 @@ hebergeur statique (GitHub Pages, itch.io, Netlify...). Sur itch.io, cochez
   `:toggleMuteSE()` / `:changeSEVolume(v)`
 
 ### Animations
-- `newAnimation(image, frameW, frameH, duration, w, h)` — sprite sheet en
-  quads ; `anim:update(dt)`, `anim:draw()`
 
 ### Divers
 - `addBind(key, action)` / `getBindOf(action)` / `isBindDown(action)` —
@@ -236,11 +237,11 @@ car le backend graphique est mocké et le RNG est injecté/seedé :
 ### Où tester quoi (guide)
 
 - **Logique de gameplay, règles, scoring, physique pure** → nouveau module
-  dans `.engine/src/engine/domain/` (comme `state.lua`) + test dans `.engine/src/engine/tests/unit/` (moteur) ou `tests/` (projet).
+  dans `game/` (comme l'exemple `state.lua`) + test dans `.engine/src/engine/tests/unit/` (moteur) ou `tests/` (projet).
   Le RNG doit passer par `domain.mathx.rng` pour rester déterministe en test
-  (voir `tests/lib/deterministic.lua`).
+  (voir `.engine/src/engine/tests/lib/deterministic.lua`).
 - **Comportement moteur (boucle, calques, culling, collisions, UI, audio)**
-  → test dans `tests/unit/` avec `mock_backend` : on attache le mock via
+  → test dans `.engine/src/engine/tests/unit/` avec `mock_backend` : on attache le mock via
   `core.attach(m.backend)` et on vérifie soit l'état, soit les opérations
   enregistrées (`m.count("rectangle")`).
 - **Changements volontaires de comportement gameplay** → mettre à jour le

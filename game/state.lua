@@ -1,8 +1,12 @@
 --------------------------------------------------------------------
--- domain/state.lua : état du jeu pur (façade orientée données).
+-- game/state.lua : EXEMPLE d'état de jeu pur (orienté données).
 -- Ici vit la logique métier : règles, scoring, progression, victoire.
 -- Pattern recommandé : cet état est une table plate sérialisable
 -- (JSON-like), qu'on peut sauvegarder, recharger et tester sans LÖVE.
+--
+-- C'est un module PROJET (pas du moteur) : le moteur ne connaît pas
+-- la notion d'état de jeu — libre à vous d'en faire une state machine
+-- complète, ou de le supprimer si votre jeu n'en a pas besoin.
 --------------------------------------------------------------------
 local state = {}
 

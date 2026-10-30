@@ -1,7 +1,7 @@
 --------------------------------------------------------------------
 -- domain/init.lua : couche DOMAINE — 100% pure, zéro dépendance LÖVE.
 -- Toute la logique testable sans moteur graphique vit ici :
--- math, géométrie, état du jeu, règles, IA, scores, niveaux...
+-- math, géométrie, règles, IA, scores, niveaux...
 -- Ne jamais importer love.* ni core.* depuis ce dossier.
 --------------------------------------------------------------------
 domain = {}
@@ -20,7 +20,6 @@ end
 
 domain.mathx    = import("mathx")
 domain.geometry = import("geometry")
-domain.state    = import("state")
 
 -- Helper historique : copie les champs de params dans t.
 function domain.applyParams(t, params)

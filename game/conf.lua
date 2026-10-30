@@ -21,8 +21,8 @@ function love.conf(t)
   -- love.js que vous utilisez pour éviter l'avertissement, ou gardez
   -- votre version desktop ici si vous ne visez que le desktop.
   t.version = "11.4"
-  -- Sur le web (love.js), love.thread n'est pas disponible en mode
-  -- compatibilité ; gardez t.thread et t.audio.mixwithbackground
-  -- simples si vous visez le build web.
-  t.modules.thread = true
+  -- love.thread désactivé : le build web (love.js, mode compatibilité)
+  -- n'a pas de threads. Réactivez-le si votre jeu en a besoin ET si
+  -- vous visez uniquement le desktop.
+  t.modules.thread = false
 end

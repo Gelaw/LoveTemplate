@@ -1,0 +1,54 @@
+# CI : vérifie le template à chaque push/PR.
+# - check.sh  : syntaxe de tous les .lua (luac -p)
+# - test.sh   : suite complète (moteur + projet) en Lua pur
+# (lint.sh nécessite luacheck via luarocks — ajouté ici aussi, en non
+#  bloquant pour l'instant ; passez-le en bloquant quand il est propre.)
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        lua: [lua5.1, luajit]
+    name: check + tests (${{ matrix.lua }})
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer Lua
+        run: |
+          sudo apt-get update
+          if [ "${{ matrix.lua }}" = "lua5.1" ]; then
+            sudo apt-get install -y lua5.1
+            echo "LUA=lua5.1" >> "$GITHUB_ENV"
+          else
+            sudo apt-get install -y luajit
+            echo "LUA=luajit" >> "$GITHUB_ENV"
+          fi
+
+      - name: Syntaxe (luac -p)
+        run: scripts/check.sh
+
+      - name: Tests (moteur + projet)
+        run: scripts/test.sh
+
+  lint:
+    runs-on: ubuntu-latest
+    name: lint (luacheck, non bloquant)
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer luacheck
+        run: |
+          sudo apt-get install -y luarocks
+          sudo luarocks install luacheck
+
+      - name: Lint
+        run: scripts/lint.sh

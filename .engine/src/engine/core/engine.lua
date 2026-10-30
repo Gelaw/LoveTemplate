@@ -9,7 +9,6 @@ local engine = {
   updates = {},   -- callbacks d'update
   bindings = {},  -- action -> touche
   width = 0, height = 0,
-  gameover = false,
   projectSetup = nil, -- fourni par main.lua (logique spécifique projet)
 }
 
@@ -92,7 +91,6 @@ function engine.init(setup)
   engine.updates = {}
   engine.bindings = {}
   engine.bindsDown = {}
-  engine.gameover = false
   engine.simTime = 0
   -- caméra remise à zéro : un init doit être totalement reproductible
   -- (les tests manipulent camera.scale/mode, il ne faut pas qu'ils fuient
@@ -122,9 +120,8 @@ function engine.init(setup)
   if setup then setup() end
 end
 
--- Un pas d'update. gameover coupe toute la logique.
+-- Un pas d'update.
 function engine.update(dt)
-  if engine.gameover then return end
   for u, update in pairs(engine.updates) do
     if type(update) ~= "function" then
       core.api().quit()
