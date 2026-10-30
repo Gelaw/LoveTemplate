@@ -19,11 +19,11 @@ if [ -z "$LUA_BIN" ]; then
   exit 1
 fi
 
-mkdir -p tests/golden
-"$LUA_BIN" tests/run.lua golden
+mkdir -p .engine/src/engine/tests/golden
+"$LUA_BIN" .engine/src/engine/tests/run.lua golden
 echo ""
 echo "Nouveau snapshot :"
-cat tests/golden/golden.txt
+cat .engine/src/engine/tests/golden/golden.txt
 echo ""
 echo "ATTENTION : relisez ce snapshot avant de committer —"
 echo "il devient la reference de non-regression."

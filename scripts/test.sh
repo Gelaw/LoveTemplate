@@ -29,4 +29,4 @@ fi
 
 MODE="${1:-all}"
 echo "Interpreteur : $LUA_BIN"
-exec "$LUA_BIN" tests/run.lua "$MODE"
+exec "$LUA_BIN" .engine/src/engine/tests/run.lua "$MODE"

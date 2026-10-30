@@ -3,7 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-GAME_DIR="${1:-src}"
+GAME_DIR="${1:-game}"
 if ! command -v love >/dev/null 2>&1; then
   echo "Erreur : la commande 'love' n'est pas dans le PATH." >&2
   echo "Installez LÖVE 11.x : https://love2d.org/" >&2

@@ -9,7 +9,7 @@ if ! command -v luac >/dev/null 2>&1; then
 fi
 
 fail=0
-for f in $(find src -name '*.lua' | sort); do
+for f in $(find game tests .engine -name '*.lua' | sort); do
   if luac -p "$f" 2>/tmp/luac_err.txt; then
     echo "OK   $f"
   else

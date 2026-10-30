@@ -31,73 +31,51 @@ gardez en tete que le web reste en 11.4 (API quasi identique).
 
 ## Structure
 
-**Règle d'or pour dupliquer le projet** : tout ce qui est projet
-(gameplay, entités, config fenêtre, assets) vit dans **`src/game/`**.
-Le reste (`main.lua`, `conf.lua`, `domain/`, `core/`, `adapter/`,
-`base.lua`, `scripts/`, `tests/`) est le TEMPLATE figé — dupliquez le
-repo et ne modifiez que `src/game/` pour travailler sur un prototype.
-Pour mettre à jour le template plus tard, un merge/rebase suffit car
-vos modifications ne le touchent pas.
-
 ```
-love2d-web-template/
-├── src/                        # le jeu (ce dossier devient le .love)
-│   ├── conf.lua                # TEMPLATE — applique game.config (ne pas toucher)
-│   ├── main.lua                # TEMPLATE — câble layers + adapter (ne pas toucher)
-│   ├── base.lua                # TEMPLATE — façade compat API historique (facultatif)
-│   ├── game/                   # ★ VOTRE PROJET — le seul dossier à modifier
-│   │   └── init.lua            #   game.config (fenêtre) + game.setup (gameplay)
-│   ├── domain/                 # COUCHE DOMAINE — 100% pure, zéro LÖVE
-│   │   ├── init.lua            #   assemble + merge math helpers dans math
-│   │   ├── mathx.lua           #   math pures, RNG injecté pour les tests
-│   │   ├── geometry.lua       #   hitbox, intersections, entitiesCollide
-│   │   └── state.lua           #   état de jeu pur (score, vies, règles)
-│   ├── core/                   # COUCHE CORE — moteur, backend injecté
-│   │   ├── init.lua            #   core.attach(backend), core.api()
-│   │   ├── engine.lua          #   boucle, 9 calques, bindings, safeLoad
-│   │   ├── camera.lua          #   follow/moveTo/shake (via backend)
-│   │   ├── entities.lua        #   registre, update, collisions (-> domain)
-│   │   ├── particles.lua       #   effets particules (via backend)
-│   │   ├── ui.lua              #   hiérarchie UI, hit-test souris
-│   │   └── audio.lua           #   musiques + effets (via backend)
-│   └── adapter/
-│       └── love2d.lua          # ADAPTER — SEUL fichier touchant love.*
-├── tests/
-│   ├── run.lua                 # runner (lua pur, aucun LÖVE requis)
-│   ├── lib/
-│   │   ├── harness.lua         # mini framework d'assertions maison
-│   │   ├── mock_backend.lua    # backend factice: log des opérations graph
-│   │   └── deterministic.lua   # RNG seedé pour la reproductibilité
-│   ├── unit/                   # tests UNITAIRES (domain + core par module)
-│   │   ├── mathx_test.lua
-│   │   ├── geometry_test.lua
-│   │   ├── state_test.lua
-│   │   ├── camera_test.lua
-│   │   ├── entities_test.lua
-│   │   ├── particles_test.lua
-│   │   ├── ui_test.lua
-│   │   ├── audio_test.lua
-│   │   └── engine_test.lua
-│   ├── regression/             # tests de NON-RÉGRESSION
-│   │   ├── simulation.lua      #   scénario de référence déterministe
-│   │   └── golden_test.lua     #   compare au golden file
-│   ├── golden/
-│   │   └── golden.txt          #   référence validée (update via script)
-│   └── integration/            # tests d'INTÉGRATION
-│       ├── boot_test.lua       #   boot complet engine + 60 frames
-│       └── compat_test.lua     #   façade base.lua expose bien tout
-├── scripts/
-│   ├── run.sh                  # lance le jeu avec LÖVE (dev)
-│   ├── check.sh                # syntaxe de tous les .lua (luac -p)
-│   ├── test.sh                 # SUITE DE TESTS (lua pur)
-│   ├── update-golden.sh        # régénère le golden file (après revue)
-│   ├── package.sh              # construit dist/<nom>.love
-│   ├── web.sh                  # construit dist/web/ (HTML/JS) via love.js
-│   ├── serve.sh                # serveur local http://localhost:8000
-│   └── clean.sh                # supprime dist/
+LoveTemplate/
+├── game/                    # ★ VOTRE JEU — le seul dossier à modifier
+│   ├── main.lua             #   point d'entrée (TEMPLATE, ne pas toucher)
+│   ├── conf.lua             #   config LÖVE (TEMPLATE, applique setup.config)
+│   └── setup.lua            #   ★ config fenêtre + initialisation du gameplay
+├── tests/                   # ★ VOS tests (dépendent de game/ ; voir tests/README.md)
+├── scripts/                 # outillage (build/run/test/lint, ne pas toucher)
+│   ├── run.sh               #   lance le jeu (dev)
+│   ├── check.sh             #   syntaxe de tous les .lua (luac -p)
+│   ├── test.sh              #   suite de tests (lua pur, aucun LÖVE requis)
+│   ├── lint.sh              #   lint statique (luacheck, config .luacheck.lua)
+│   ├── update-golden.sh     #   régénère le golden file (après revue)
+│   ├── package.sh           #   construit dist/<nom>.love
+│   ├── web.sh               #   construit dist/web/ (HTML/JS) via love.js
+│   ├── serve.sh             #   serveur local (test navigateur)
+│   └── clean.sh              #   supprime dist/
+├── .engine/                 # le MOTEUR du template — FIGÉ, ne jamais modifier
+│   └── src/engine/
+│       ├── init.lua         #   charge les couches (expose globals domain/core)
+│       ├── base.lua         #   façade compat API historique
+│       ├── domain/          #   COUCHE DOMAINE — 100% pure, zéro LÖVE
+│       │   ├── mathx.lua    #     math pures, RNG injecté pour les tests
+│       │   ├── geometry.lua #     hitbox, intersections, entitiesCollide
+│       │   └── state.lua    #     état de jeu pur (score, vies, règles)
+│       ├── core/            #   COUCHE CORE — moteur, backend injecté
+│       │   ├── engine.lua   #     boucle, 9 calques, bindings, safeLoad
+│       │   ├── camera.lua   #     follow/moveTo/shake (via backend)
+│       │   ├── entities.lua #     registre, update, collisions (-> domain)
+│       │   ├── particles.lua#     effets particules (via backend)
+│       │   ├── ui.lua       #     hiérarchie UI, hit-test souris
+│       │   └── audio.lua    #     musiques + effets (via backend)
+│       ├── adapter/
+│       │   └── love2d.lua   #     SEUL fichier touchant love.*
+│       └── tests/           #   tests DU MOTEUR (unit/golden/intégration)
+├── .luacheck.lua            # config du linter
 ├── .gitignore
 └── README.md
 ```
+
+**Règle d'or** : tout ce qui est projet vit dans `game/` et `tests/`.
+Le dossier `.engine/` (le moteur du template) et `scripts/` sont figés :
+dupliquez le repo, travaillez dans `game/`, et un merge depuis
+l'upstream du template restera sans conflit. Vous n'avez jamais besoin
+d'ouvrir `.engine/` — tout y est documenté et testé de son côté.
 
 ## Architecture : domain / core / adapter
 
@@ -140,6 +118,7 @@ l'intégration bout-en-bout se fait via le boot complet.
 |---|---|---|
 | `scripts/run.sh` | [LÖVE 11.x](https://love2d.org/) (`love` dans le PATH) | dev desktop |
 | `scripts/check.sh` | `luac` (avec le paquet `lua`/`luajit`) | check syntaxique |
+| `scripts/lint.sh` | [luacheck](https://github.com/lunarmodules/luacheck) (`luarocks install luacheck` ou `dnf install lua-luacheck`) | lint statique : globals indéfinis, variables inutilisées, etc. (config `.luacheck.lua`) |
 | `scripts/test.sh` | `luajit` ou `lua` | suite de tests (le script auto-detecte) |
 | `scripts/package.sh` | `zip` | packaging `.love` |
 | `scripts/web.sh` | [Node.js](https://nodejs.org/) >= 12 (`npx`) | build web — le paquet npm `love.js` (moteur LÖVE 11.5 en WebAssembly) est telecharge par `npx --yes` au premier build, rien a compiler |
@@ -173,6 +152,9 @@ scripts/check.sh
 # 2b. Lancer la suite de tests (lua pur, aucun LÖVE requis)
 scripts/test.sh              # tout : unit + regression + integration
 scripts/test.sh unit         # seulement les unitaires
+
+# 2c. Lint statique (requiert luacheck)
+scripts/lint.sh
 
 # 3. Construire le .love (distribuable desktop)
 scripts/package.sh monjeu        # -> dist/monjeu.love
@@ -247,14 +229,14 @@ car le backend graphique est mocké et le RNG est injecté/seedé :
 
 | Famille | Où | Quoi | Quand l'écrire |
 |---|---|---|---|
-| **Unitaires** | `tests/unit/*_test.lua` | Une fonction d'un module domain/core isolée (clamp, dist, hit-test UI, cycle de vie particule...) | En même temps que la fonction (TDD possible, le domain tourne en Lua nu) |
-| **Non-régression** | `tests/regression/` + `tests/golden/golden.txt` | Une simulation déterministe complète (RNG seedé, dt fixe) produisant un snapshot d'état final comparé au golden file | Dès qu'il y a du gameplay ; mettre à jour UNIQUEMENT via `scripts/update-golden.sh` après revue manuelle du nouveau snapshot |
-| **Intégration** | `tests/integration/` | L'assemblage complet : boot engine + projectSetup + 60 frames update/draw, interactions croisées (collisions dans la boucle, UI consommée, caméra follow, façade compat) | Quand on ajoute un sous-système ou une interaction entre deux couches |
+| **Unitaires** | `.engine/src/engine/tests/unit/*_test.lua` | Une fonction d'un module domain/core isolée (clamp, dist, hit-test UI, cycle de vie particule...) | En même temps que la fonction (TDD possible, le domain tourne en Lua nu) |
+| **Non-régression** | `.engine/src/engine/tests/regression/` + golden file | Une simulation déterministe complète (RNG seedé, dt fixe) produisant un snapshot d'état final comparé au golden file | Dès qu'il y a du gameplay ; mettre à jour UNIQUEMENT via `scripts/update-golden.sh` après revue manuelle du nouveau snapshot |
+| **Intégration** | `.engine/src/engine/tests/integration/` (moteur) et `tests/` (projet) | L'assemblage complet : boot engine + projectSetup + 60 frames update/draw, interactions croisées (collisions dans la boucle, UI consommée, caméra follow, façade compat) | Quand on ajoute un sous-système ou une interaction entre deux couches |
 
 ### Où tester quoi (guide)
 
 - **Logique de gameplay, règles, scoring, physique pure** → nouveau module
-  dans `src/domain/` (comme `state.lua`) + test dans `tests/unit/`.
+  dans `.engine/src/engine/domain/` (comme `state.lua`) + test dans `.engine/src/engine/tests/unit/` (moteur) ou `tests/` (projet).
   Le RNG doit passer par `domain.mathx.rng` pour rester déterministe en test
   (voir `tests/lib/deterministic.lua`).
 - **Comportement moteur (boucle, calques, culling, collisions, UI, audio)**
@@ -280,7 +262,7 @@ car le backend graphique est mocké et le RNG est injecté/seedé :
 
 - `love.timer.getTime` et le gameplay ne changent pas ; le canvas s'adapte
   a la taille du navigateur.
-- La demo (`src/game/init.lua`) n'utilise que des formes vectorielles : aucun asset
+- La demo (`game/setup.lua`) n'utilise que des formes vectorielles : aucun asset
   requis, elle tourne telle quelle desktop et web.
 - Pour un jeu reel, remplacez `projectSetup()` et ajoutez vos assets dans
   `src/` (ils seront inclus dans le `.love` puis dans le `.data` web).
