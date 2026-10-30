@@ -13,8 +13,10 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 NAME="${1:-$(basename "$(pwd)")}"
-OUT="dist/${NAME}.love"
 mkdir -p dist
+# Chemin ABSOLU : les sous-shells changent de dossier (game/,
+# .engine/src), un chemin relatif y serait résolu au mauvais endroit.
+OUT="$(pwd)/dist/${NAME}.love"
 rm -f "$OUT"
 
 if ! command -v zip >/dev/null 2>&1; then
@@ -22,6 +24,14 @@ if ! command -v zip >/dev/null 2>&1; then
   exit 1
 fi
 
-(cd game && zip -r "../$OUT" . -x '*.DS_Store' >/dev/null)
-(cd .engine/src && zip -r "../../../$OUT" engine -x 'engine/tests/*' -x '*.DS_Store' >/dev/null)
+# stdout de zip est bruyant (liste chaque fichier) : on le silencie,
+# mais PAS stderr — une erreur de packaging doit rester visible.
+if ! (cd game && zip -r "$OUT" . -x '*.DS_Store' >/dev/null); then
+  echo "Erreur : zip a échoué sur game/" >&2
+  exit 1
+fi
+if ! (cd .engine/src && zip -r "$OUT" engine -x 'engine/tests/*' -x '*.DS_Store' >/dev/null); then
+  echo "Erreur : zip a échoué sur .engine/src/engine/" >&2
+  exit 1
+fi
 echo "OK $OUT"
