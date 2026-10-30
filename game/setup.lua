@@ -61,38 +61,12 @@ function setup.run()
     })
   end
 
-  -- HUD de démo + diagnostic clavier (à retirer une fois le problème
-  -- résolu) : affiche côte à côte le polling BRUT de chaque touche
-  -- (backend.isKeyDown = love.keyboard.isDown en prod, ce que SDL
-  -- remonte) et le bind résolu (engine.isBindDown, ce que le moteur
-  -- en déduit). Si les deux colonnes divergent, le problème est dans
-  -- le template ; si la première est fausse quand vous tenez la
-  -- touche, SDL ne remonte pas la touche (environnement : layout,
-  -- Wayland, focus fenêtre). Passé par le backend pour rester
-  -- exécutable en test (sans LÖVE).
-  local lastPrinted = {}
+  -- HUD de démo
   engine.addDrawFunction(function()
     local api = core.api()
     api.origin()
     api.setColor(1, 1, 1)
     api.print("ZQSD pour bouger, touchez les caisses.", 12, 12)
-    local y = 32
-    for _, key in ipairs({"z", "q", "s", "d"}) do
-      local raw = api.isKeyDown(key)
-      local bound = engine.isBindDown(
-        ({z = "up", q = "left", s = "down", d = "right"})[key])
-      api.print(string.format("isDown(%q)=%-5s isBindDown=%s",
-        key, tostring(raw), tostring(bound)), 12, y)
-      -- print console UNIQUEMENT au changement d'état (pas de spam par frame)
-      local state = tostring(raw) .. tostring(bound)
-      if lastPrinted[key] ~= state then
-        lastPrinted[key] = state
-        print(string.format("[diag] touche %q : isDown=%s isBindDown=%s %s",
-          key, tostring(raw), tostring(bound),
-          raw ~= bound and "<< DIVERGENCE !" or ""))
-      end
-      y = y + 18
-    end
   end, 9)
 
   -- Émetteur de particules de démo
