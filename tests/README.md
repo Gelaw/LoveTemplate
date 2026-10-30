@@ -7,7 +7,16 @@ Ce dossier contient les tests propres au projet (ils peuvent dépendre de
 scripts/test.sh          # lance aussi les tests du moteur (.engine/)
 ```
 
-Pour écrire un test, réutilisez le harness du template :
+## tests/setup_test.lua
+
+Le test d'intégration PROJET : il charge le vrai `game/setup.lua` et
+vérifie que l'initialisation de votre projet ne casse pas le moteur
+(config exposée, calques enregistrés, bindings présents, 60 frames sans
+crash, gameplay réactif aux binds). **Si vous remplacez la démo par
+votre jeu, adaptez ce test** — c'est lui qui protège l'assemblage
+game/ + .engine/.
+
+Pour écrire un autre test, réutilisez le harness du template :
 
 ```lua
 local harness = require("engine.tests.lib.harness")

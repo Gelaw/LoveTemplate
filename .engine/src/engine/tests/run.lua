@@ -72,6 +72,12 @@ end
 if mode == "all" or mode == "integration" then
   table.insert(suites, {"integration/boot", "engine.tests.integration.boot_test"})
   table.insert(suites, {"integration/compat", "engine.tests.integration.compat_test"})
+  -- Tests PROJET (dossier tests/ à la racine) : dépendent de game/
+  local f = io.open(root .. "tests/setup_test.lua", "r")
+  if f then
+    f:close()
+    table.insert(suites, {"project/setup", "setup_test"})
+  end
 end
 if mode == "golden" then
   -- Mode spécial : (re)génère le golden file de non-régression.

@@ -231,7 +231,7 @@ car le backend graphique est mocké et le RNG est injecté/seedé :
 |---|---|---|---|
 | **Unitaires** | `.engine/src/engine/tests/unit/*_test.lua` | Une fonction d'un module domain/core isolée (clamp, dist, hit-test UI, cycle de vie particule...) | En même temps que la fonction (TDD possible, le domain tourne en Lua nu) |
 | **Non-régression** | `.engine/src/engine/tests/regression/` + golden file | Une simulation déterministe complète (RNG seedé, dt fixe) produisant un snapshot d'état final comparé au golden file | Dès qu'il y a du gameplay ; mettre à jour UNIQUEMENT via `scripts/update-golden.sh` après revue manuelle du nouveau snapshot |
-| **Intégration** | `.engine/src/engine/tests/integration/` (moteur) et `tests/` (projet) | L'assemblage complet : boot engine + projectSetup + 60 frames update/draw, interactions croisées (collisions dans la boucle, UI consommée, caméra follow, façade compat) | Quand on ajoute un sous-système ou une interaction entre deux couches |
+| **Intégration** | `.engine/src/engine/tests/integration/` (moteur) ; `tests/setup_test.lua` (PROJET : charge le vrai game/setup.lua) | L'assemblage complet : boot engine + projectSetup + 60 frames update/draw, interactions croisées (collisions dans la boucle, UI consommée, caméra follow, façade compat) | Quand on ajoute un sous-système ou une interaction entre deux couches |
 
 ### Où tester quoi (guide)
 

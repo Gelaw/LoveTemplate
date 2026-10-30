@@ -24,7 +24,15 @@ function mock.new(config)
   end
 
   m.backend = {
-    setColor = function(c) record("setColor", tostring(c[1])) end,
+    -- setColor accepte les deux formes LÖVE : table {r,g,b,a} ou 3-4 nombres
+    setColor = function(...)
+      local a = ...
+      if type(a) == "table" then
+        record("setColor", tostring(a[1]))
+      else
+        record("setColor", tostring(a))
+      end
+    end,
     translate = function(x, y) record("translate", tostring(x), tostring(y)) end,
     rotate = function(a) record("rotate", tostring(a)) end,
     scale = function(sx, sy) record("scale", tostring(sx), tostring(sy)) end,

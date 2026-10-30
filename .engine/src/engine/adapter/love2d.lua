@@ -62,12 +62,8 @@ function adapter.boot(projectSetup, config)
 end
 
 -- ---- Callbacks LÖVE (traduction d'événements) ----
--- (main.lua délègue directement à adapter.* ; voir src/main.lua)
-
-function adapter.load(arg)
-  local game = require("game")
-  adapter.boot(game.setup, game.config)
-end
+-- (game/main.lua délègue directement à adapter.* ; la config et le
+-- setup du projet passent par adapter.boot(setup.run, setup.config))
 
 function adapter.update(dt)
   core.engine.update(dt)
