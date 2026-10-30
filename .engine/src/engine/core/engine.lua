@@ -32,26 +32,14 @@ function engine.getBindOf(action)
   return engine.bindings[action]
 end
 
--- État des touches suivi par ÉVÉNEMENTS (keypressed/keyreleased, en
--- TOUCHES (lettre produite)). double filet : les événements complètent
--- le polling isDown, qui peut être faillible selon la plateforme.
-engine.bindsDown = {}
-
--- À appeler depuis l'adapter sur love.keypressed (key).
-function engine.onBindPressed(key)
-  engine.bindsDown[key] = true
-end
-
--- À appeler depuis l'adapter sur love.keyreleased (key).
-function engine.onBindReleased(key)
-  engine.bindsDown[key] = nil
-end
-
--- Un binding d'action est-il actif ? (union : événements + polling)
+-- Un binding d'action est-il actif ?
+-- Lecture UNIQUEMENT par polling (love.keyboard.isDown via le backend)
+-- sur la TOUCHE (lettre produite). Approche volontairement minimale :
+-- les couches événementielles et scancodes se sont révélées source de
+-- comportements divergents entre plateformes (desktop Wayland vs web).
 function engine.isBindDown(action)
   local key = engine.bindings[action]
   if not key then return false end
-  if engine.bindsDown[key] then return true end
   local api = core.api()
   if api.isKeyDown then
     return api.isKeyDown(key) == true
@@ -90,7 +78,6 @@ function engine.init(setup)
   for i = 1, 9 do engine.draws[i] = {} end
   engine.updates = {}
   engine.bindings = {}
-  engine.bindsDown = {}
   engine.simTime = 0
   -- caméra remise à zéro : un init doit être totalement reproductible
   -- (les tests manipulent camera.scale/mode, il ne faut pas qu'ils fuient

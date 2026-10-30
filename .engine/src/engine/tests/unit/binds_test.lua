@@ -1,85 +1,106 @@
 --------------------------------------------------------------------
--- tests/unit/binds_test.lua : tests UNITAIRES — bindings en touches
--- (lettres produites) : suivi événementiel (isBindDown) et reset.
+-- tests/unit/binds_test.lua : tests UNITAIRES — bindings en touches.
+-- Le VRAI chemin de lecture du gameplay est :
+--   engine.isBindDown(action) -> backend.isKeyDown(key) -> love.keyboard.isDown
+-- Cette batterie couvre chaque étape de la chaîne, chaque direction,
+-- et les cas limites (release, touches non bindées, re-binds).
 --------------------------------------------------------------------
 local harness = require("engine.tests.lib.harness")
 local mock = require("engine.tests.lib.mock_backend")
 
-harness.describe("core.engine bindings (touches + événements)", function()
+harness.describe("core.engine bindings (polling isDown pur)", function()
 
   local m = mock.new()
   core.attach(m.backend)
   local engine = core.engine
 
-  harness.it("onBindPressed/Released : suivi événementiel", function()
+  local function freshBindings()
     engine.bindings = {}
-    engine.bindsDown = {}
-    engine.addBind("z", "up")
-    harness.assert_false(engine.isBindDown("up"))
-    engine.onBindPressed("z")
-    harness.assert_true(engine.isBindDown("up"))
-    engine.onBindReleased("z")
-    harness.assert_false(engine.isBindDown("up"))
-  end)
+    m.held = {}
+  end
+
+  -- --- Le chemin complet, direction par direction ---
+
+  local directions = {
+    {key = "z", action = "up"},
+    {key = "q", action = "left"},
+    {key = "s", action = "down"},
+    {key = "d", action = "right"},
+    {key = "escape", action = "quit"},
+  }
+
+  for _, dir in ipairs(directions) do
+    harness.it(dir.action .. " : inactif sans touche, actif si '" .. dir.key .. "' tenu, inactif au relâchement", function()
+      freshBindings()
+      engine.addBind(dir.key, dir.action)
+      -- repos : inactif
+      harness.assert_false(engine.isBindDown(dir.action))
+      -- touche tenue : actif
+      m.held[dir.key] = true
+      harness.assert_true(engine.isBindDown(dir.action))
+      -- relâchement : inactif
+      m.held[dir.key] = nil
+      harness.assert_false(engine.isBindDown(dir.action))
+    end)
+  end
+
+  -- --- Cas limites ---
 
   harness.it("action sans binding : faux, pas de crash", function()
-    engine.bindings = {}
-    engine.bindsDown = {}
+    freshBindings()
     harness.assert_false(engine.isBindDown("actionInconnue"))
   end)
 
-  harness.it("double pression (key repeat) : reste actif", function()
-    engine.bindings = {}
-    engine.bindsDown = {}
-    engine.addBind("d", "right")
-    engine.onBindPressed("d")
-    engine.onBindPressed("d")
-    harness.assert_true(engine.isBindDown("right"))
-    engine.onBindReleased("d")
-    harness.assert_false(engine.isBindDown("right"))
+  harness.it("une autre touche tenue n'active pas le bind", function()
+    freshBindings()
+    engine.addBind("z", "up")
+    m.held["a"] = true -- touche non bindée tenue
+    harness.assert_false(engine.isBindDown("up"))
   end)
 
-  harness.it("plusieurs binds simultanés", function()
-    engine.bindings = {}
-    engine.bindsDown = {}
+  harness.it("plusieurs binds actifs simultanément", function()
+    freshBindings()
     engine.addBind("z", "up")
     engine.addBind("q", "left")
-    engine.onBindPressed("z")
-    engine.onBindPressed("q")
+    m.held["z"] = true
+    m.held["q"] = true
     harness.assert_true(engine.isBindDown("up"))
     harness.assert_true(engine.isBindDown("left"))
-    engine.onBindReleased("z")
+    m.held["z"] = nil
     harness.assert_false(engine.isBindDown("up"))
     harness.assert_true(engine.isBindDown("left"))
   end)
 
-  harness.it("engine.init remet bindsDown à zéro", function()
+  harness.it("re-bind : la nouvelle touche remplace l'ancienne", function()
+    freshBindings()
+    engine.addBind("z", "up")
+    engine.addBind("w", "up") -- re-bind
+    m.held["z"] = true
+    harness.assert_false(engine.isBindDown("up")) -- ancienne touche ignorée
+    m.held["w"] = true
+    harness.assert_true(engine.isBindDown("up"))
+  end)
+
+  harness.it("backend sans isKeyDown : faux sans crash", function()
+    local bare = mock.new()
+    bare.backend.isKeyDown = nil
+    core.attach(bare.backend)
+    local savedBindings = engine.bindings
+    engine.bindings = {up = "z"}
+    harness.assert_false(engine.isBindDown("up"))
+    engine.bindings = savedBindings
+    core.attach(m.backend)
+  end)
+
+  harness.it("engine.init remet les bindings à zéro", function()
     engine.bindings = {}
-    engine.bindsDown = {}
+    m.held = {}
     engine.addBind("s", "down")
-    engine.onBindPressed("s")
+    m.held["s"] = true
     harness.assert_true(engine.isBindDown("down"))
     engine.init(function() end) -- réinit complète
-    harness.assert_false(engine.isBindDown("down"))
-  end)
-
-  harness.it("union : le polling isDown seul suffit aussi", function()
-    local m2 = mock.new()
-    m2.backend.isKeyDown = function(key) return key == "d" end
-    core.attach(m2.backend)
-    engine.bindings = {}
-    engine.bindsDown = {}
-    engine.addBind("d", "right")
-    harness.assert_true(engine.isBindDown("right"))
-  end)
-
-  harness.it("quit : keypressed sur la touche bindée", function()
-    engine.bindings = {}
-    engine.bindsDown = {}
-    engine.addBind("escape", "quit")
-    -- (le quit réel passe par l'adapter ; ici on teste le suivi)
-    engine.onBindPressed("escape")
-    harness.assert_true(engine.isBindDown("quit"))
+    m.held["s"] = true
+    harness.assert_false(engine.isBindDown("down")) -- bind disparu
   end)
 end)
 

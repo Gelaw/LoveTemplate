@@ -16,6 +16,7 @@ function mock.new(config)
     log = {},        -- séquence de toutes les opérations du backend
     drawCount = 0,
     quitters = 0,
+    held = config.held or {}, -- touches tenues (isKeyDown) : table clé -> vrai
     loadedFiles = config.loadedFiles or {}, -- nom -> chunk (pour loadFile)
   }
 
@@ -53,10 +54,10 @@ function mock.new(config)
     end,
     draw = function(img, quad, x, y) record("draw") end,
     getTime = function() return m.time end,
-    -- polling clavier : faux par defaut (les tests simulent plutot les
-    -- evenements via engine.onBindPressed/onBindReleased, comme l'adapter
-    -- reel avec love.keypressed/keyreleased).
-    isKeyDown = function(key) return false end,
+    -- polling clavier (le VRAI chemin de lecture : isBindDown -> isKeyDown
+    -- -> love.keyboard.isDown en prod). Les tests pilotent m.held pour
+    -- simuler des touches tenues.
+    isKeyDown = function(key) return m.held[key] == true end,
     setFullscreenMode = function() record("setMode") end,
     quit = function() m.quitters = m.quitters + 1 end,
     loadFile = function(name)

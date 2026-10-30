@@ -72,7 +72,7 @@ if mode == "all" or mode == "integration" then
   table.insert(suites, {"integration/boot", "engine.tests.integration.boot_test"})
   table.insert(suites, {"integration/compat", "engine.tests.integration.compat_test"})
   -- Tests PROJET (dossier tests/ à la racine) : dépendent de game/
-  for _, t in ipairs({"setup_test", "state_test"}) do
+  for _, t in ipairs({"setup_test", "state_test", "input_test"}) do
     local f = io.open(root .. "tests/" .. t .. ".lua", "r")
     if f then
       f:close()

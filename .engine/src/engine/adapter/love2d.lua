@@ -74,16 +74,11 @@ function adapter.draw()
 end
 
 function adapter.keypressed(key, scancode)
-  -- Suivi événementiel de la TOUCHE (lettre produite) ; complète le
-  -- polling isDown qui peut être faillible selon la plateforme.
-  if key then core.engine.onBindPressed(key) end
+  -- Seul usage événementiel : quitter. Le gameplay lit son état
+  -- clavier exclusivement par polling (engine.isBindDown -> isDown).
   if key == core.engine.getBindOf("quit") then
     love.event.quit()
   end
-end
-
-function adapter.keyreleased(key, scancode)
-  if key then core.engine.onBindReleased(key) end
 end
 
 function adapter.mousepressed(x, y, button)

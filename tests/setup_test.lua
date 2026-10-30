@@ -58,15 +58,16 @@ harness.describe("projet : game/setup.lua (intégration)", function()
     harness.assert_true(m.count("rectangle") > 0)
   end)
 
-  harness.it("gameplay : un bind actif déplace des entités", function()
+  harness.it("gameplay : une touche tenue déplace des entités", function()
     local engine = core.engine
+    m.held = {}
     engine.init(setup.run)
     local player = core.entities.list[1]
     local y0 = player.y
-    engine.onBindPressed("z") -- up
+    m.held["z"] = true -- up, via polling (le vrai chemin de prod)
     for i = 1, 30 do engine.update(1 / 60) end
     harness.assert_true(player.y < y0)
-    engine.onBindReleased("z")
+    m.held["z"] = nil
     local y1 = player.y
     for i = 1, 10 do engine.update(1 / 60) end
     harness.assert_approx(player.y, y1, 1e-9)
