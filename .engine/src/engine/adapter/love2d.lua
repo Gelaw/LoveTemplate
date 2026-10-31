@@ -22,6 +22,7 @@ function adapter.buildBackend()
     rectangle    = function(...) g.rectangle(...) end,
     circle       = function(...) g.circle(...) end,
     print        = function(...) g.print(...) end,
+    printf       = function(...) g.printf(...) end,
     newFont      = function(...) return g.newFont(...) end,
     newImage     = function(path) return g.newImage(path) end,
     setFont      = function(f) g.setFont(f) end,
@@ -71,6 +72,8 @@ function adapter.boot(projectSetup, config)
     love.window.setMode(config.width, config.height, {
       resizable = config.resizable,
       vsync = config.vsync,
+      fullscreen = config.fullscreen == true,
+      highdpi = config.highdpi == true,
     })
   end
   api.setFont(api.newFont(11))
@@ -99,6 +102,7 @@ function adapter.keypressed(key, scancode)
 end
 
 function adapter.mousepressed(x, y, button)
+  core.engine.mouseX, core.engine.mouseY = x, y
   core.ui.mousePress(x, y, button)
 end
 
@@ -107,6 +111,7 @@ function adapter.mousereleased(x, y, button)
 end
 
 function adapter.mousemoved(x, y, dx, dy)
+  core.engine.mouseX, core.engine.mouseY = x, y
   core.ui.mouseMoved(x, y, dx, dy)
 end
 

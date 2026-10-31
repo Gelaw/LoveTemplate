@@ -17,6 +17,11 @@ local engine = {
   letterbox = nil,
   virtualWidth = 960,
   virtualHeight = 540,
+  -- Derniere position connue de la souris en coordonnees ECRAN (canvas),
+  -- mise a jour par l'adapter (mousemoved/mousepressed). Les widgets UI
+  -- (ex. hover du bouton) s'en servent.
+  mouseX = nil,
+  mouseY = nil,
 }
 
 for i = 1, 9 do engine.draws[i] = {} end
@@ -102,6 +107,7 @@ function engine.init(setup)
   engine.simTime = 0
   -- letterbox remis a nil : un init doit rester reproductible
   engine.letterbox = nil
+  engine.mouseX, engine.mouseY = nil, nil
   -- caméra remise à zéro : un init doit être totalement reproductible
   -- (les tests manipulent camera.scale/mode, il ne faut pas qu'ils fuient
   -- dans les snapshots suivants)

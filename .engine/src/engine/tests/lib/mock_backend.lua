@@ -30,7 +30,7 @@ function mock.new(config)
     setColor = function(...)
       local a = ...
       if type(a) == "table" then
-        record("setColor", tostring(a[1]))
+        record("setColor", tostring(a[1]), tostring(a[2]), tostring(a[3]))
       else
         record("setColor", tostring(a))
       end
@@ -45,6 +45,7 @@ function mock.new(config)
     rectangle = function(mode, x, y, w, h) record("rectangle", mode) end,
     circle = function(mode, x, y, r) record("circle", mode) end,
     print = function(text, x, y) record("print", tostring(text)) end,
+    printf = function(text, x, y, w, align) record("printf", tostring(text), tostring(align)) end,
     newFont = function(size) return {mock = true} end,
     newImage = function(path)
       return {

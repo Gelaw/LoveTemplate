@@ -16,6 +16,35 @@ function entities.clear()
   entities.list = {}
 end
 
+-- Retire une entite du registre (par reference). Retourne true si elle
+-- etait presente. Sans effet si elle n'est plus la (deja retiree).
+function entities.remove(entity)
+  local list = entities.list
+  for i = #list, 1, -1 do
+    if list[i] == entity then
+      table.remove(list, i)
+      return true
+    end
+  end
+  return false
+end
+
+-- Itere sur toutes les entites (snapshot : safe meme si l'update
+-- modifie la liste pendant l'iteration).
+function entities.each(fn)
+  local snapshot = {}
+  for i, e in ipairs(entities.list) do snapshot[i] = e end
+  for _, e in ipairs(snapshot) do fn(e) end
+end
+
+-- Premiere entite pour laquelle pred(e) est vrai, ou nil.
+function entities.find(pred)
+  for _, e in ipairs(entities.list) do
+    if pred(e) then return e end
+  end
+  return nil
+end
+
 function entities.count()
   return #entities.list
 end

@@ -28,7 +28,7 @@ harness.describe("intégration : chaîne d'input complète (ZQSD)", function()
   local function bootFresh()
     m.held = {}
     engine.init(setup.run)
-    return core.entities.list[1]
+    return core.entities.find(function(e) return e.tag == "player" end)
   end
 
   local cases = {

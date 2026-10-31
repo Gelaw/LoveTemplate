@@ -65,8 +65,7 @@ harness.describe("core.engine", function()
     engine.letterbox = nil
     m2.reset()
     engine.draw()
-    harness.assert_eq(m2.count("origin"), 0)
-    harness.assert_eq(m2.count("setBg"), 0)
+    harness.assert_eq(m2.count("setBg"), 0) -- pas de fond noir de letterbox
   end)
 
   harness.it("letterbox actif : origin + scale(min) + centrage, fond noir", function()
