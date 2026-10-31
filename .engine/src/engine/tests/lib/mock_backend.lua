@@ -17,6 +17,7 @@ function mock.new(config)
     drawCount = 0,
     quitters = 0,
     held = config.held or {}, -- touches tenues (isKeyDown) : table clé -> vrai
+    padHeld = config.padHeld or {}, -- boutons manette tenus (isPadDown)
     loadedFiles = config.loadedFiles or {}, -- nom -> chunk (pour loadFile)
   }
 
@@ -65,6 +66,7 @@ function mock.new(config)
     -- -> love.keyboard.isDown en prod). Les tests pilotent m.held pour
     -- simuler des touches tenues.
     isKeyDown = function(key) return m.held[key] == true end,
+    isPadDown = function(button) return m.padHeld[button] == true end,
     setFullscreenMode = function() record("setMode") end,
     quit = function() m.quitters = m.quitters + 1 end,
     loadFile = function(name)

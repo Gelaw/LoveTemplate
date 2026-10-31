@@ -34,6 +34,11 @@ function adapter.buildBackend()
     getTime      = function() return love.timer.getTime() end,
     -- clavier (polling de la touche ; les événements passent par adapter.key*)
     isKeyDown = function(key) return love.keyboard.isDown(key) end,
+    -- manette : premier joystick connecté (fonctionne desktop + web love.js)
+    isPadDown = function(button)
+      local joy = love.joystick.getJoysticks()[1]
+      return joy ~= nil and joy:isGamepadDown(button)
+    end,
     -- fenêtre
     setFullscreenMode = function() love.window.setMode(0, 0) end,
     quit         = function() love.event.quit() end,

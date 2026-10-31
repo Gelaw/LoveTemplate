@@ -92,6 +92,53 @@ harness.describe("core.engine bindings (polling isDown pur)", function()
     core.attach(m.backend)
   end)
 
+  -- --- Bindings manette ---
+
+  harness.it("pad : addPadBind/getPadBindOf + isBindDown via isPadDown", function()
+    freshBindings()
+    engine.padBindings = {}
+    engine.addPadBind("dpup", "up")
+    harness.assert_eq(engine.getPadBindOf("up"), "dpup")
+    harness.assert_false(engine.isBindDown("up"))
+    m.padHeld["dpup"] = true
+    harness.assert_true(engine.isBindDown("up"))
+    m.padHeld["dpup"] = nil
+    harness.assert_false(engine.isBindDown("up"))
+  end)
+
+  harness.it("pad : union clavier + manette (l'un ou l'autre active l'action)", function()
+    freshBindings()
+    engine.padBindings = {}
+    engine.addBind("z", "up")
+    engine.addPadBind("dpup", "up")
+    m.held["z"] = true
+    harness.assert_true(engine.isBindDown("up")) -- clavier seul
+    m.held["z"] = nil
+    m.padHeld["dpup"] = true
+    harness.assert_true(engine.isBindDown("up")) -- manette seule
+    m.padHeld["dpup"] = nil
+    harness.assert_false(engine.isBindDown("up"))
+  end)
+
+  harness.it("pad : action sans aucun bind -> faux ; backend sans isPadDown -> faux sans crash", function()
+    freshBindings()
+    engine.padBindings = {}
+    harness.assert_false(engine.isBindDown("up"))
+    local bare = mock.new()
+    bare.backend.isPadDown = nil
+    core.attach(bare.backend)
+    engine.padBindings = {up = "dpup"}
+    harness.assert_false(engine.isBindDown("up"))
+    core.attach(m.backend)
+  end)
+
+  harness.it("engine.init remet les bindings manette à zéro", function()
+    engine.bindings = {}
+    engine.padBindings = {up = "dpup"}
+    engine.init(function() end)
+    harness.assert_nil(engine.getPadBindOf("up"))
+  end)
+
   harness.it("engine.init remet les bindings à zéro", function()
     engine.bindings = {}
     m.held = {}

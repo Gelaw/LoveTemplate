@@ -7,7 +7,8 @@
 local engine = {
   draws = {},     -- 9 calques de rendu (1 fond -> 9 UI)
   updates = {},   -- callbacks d'update
-  bindings = {},  -- action -> touche
+  bindings = {},  -- action -> touche clavier
+  padBindings = {}, -- action -> bouton manette (ex. "a", "dpup", "leftshoulder")
   width = 0, height = 0,
   projectSetup = nil, -- fourni par main.lua (logique spécifique projet)
   -- Letterbox : nil (defaut, comportement historique) ou true pour
@@ -34,6 +35,16 @@ function engine.addBind(key, action)
   engine.bindings[action] = key
 end
 
+-- Bind manette : bouton LÖVE ("a", "b", "dpup", "leftshoulder"...).
+-- isBindDown(action) fait l'union clavier + manette.
+function engine.addPadBind(button, action)
+  engine.padBindings[action] = button
+end
+
+function engine.getPadBindOf(action)
+  return engine.padBindings[action]
+end
+
 function engine.getBindOf(action)
   return engine.bindings[action]
 end
@@ -44,11 +55,14 @@ end
 -- les couches événementielles et scancodes se sont révélées source de
 -- comportements divergents entre plateformes (desktop Wayland vs web).
 function engine.isBindDown(action)
-  local key = engine.bindings[action]
-  if not key then return false end
   local api = core.api()
-  if api.isKeyDown then
-    return api.isKeyDown(key) == true
+  local key = engine.bindings[action]
+  if key and api.isKeyDown and api.isKeyDown(key) == true then
+    return true
+  end
+  local pad = engine.padBindings[action]
+  if pad and api.isPadDown and api.isPadDown(pad) == true then
+    return true
   end
   return false
 end
@@ -84,6 +98,7 @@ function engine.init(setup)
   for i = 1, 9 do engine.draws[i] = {} end
   engine.updates = {}
   engine.bindings = {}
+  engine.padBindings = {}
   engine.simTime = 0
   -- letterbox remis a nil : un init doit rester reproductible
   engine.letterbox = nil
