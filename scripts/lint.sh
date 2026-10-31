@@ -24,7 +24,7 @@ fi
 # Codes de sortie luacheck : 0 = propre, 1 = warnings, >=2 = erreurs.
 # On neutralise les warnings (résumé quand même affiché), pas les erreurs.
 set +e
-luacheck game tests .engine
+luacheck game tests examples .engine
 code=$?
 set -e
 

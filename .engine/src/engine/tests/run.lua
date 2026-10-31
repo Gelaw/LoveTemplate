@@ -38,6 +38,7 @@ package.path = table.concat({
   root .. ".engine/src/?/init.lua",
   root .. "game/?.lua",
   root .. "tests/?.lua",
+  root .. "examples/?.lua",
   root .. "?.lua",
   package.path,
 }, ";")
@@ -77,17 +78,38 @@ if mode == "all" or mode == "integration" then
   -- un fork ajoute tests/xxx_test.lua + une ligne la-bas, sans toucher
   -- .engine/. Repli sur la liste historique si suite.lua est absent.
   local projectTests = {"setup_test", "state_test", "input_test"}
-  local suitePath = root .. "tests/suite.lua"
-  local suiteFile = io.open(suitePath, "r")
-  if suiteFile then
-    suiteFile:close()
-    local ok, listed = pcall(dofile, suitePath)
-    if ok and type(listed) == "table" then projectTests = listed end
+  -- Charge tests/suite.lua (cote PROJET) : dofile natif d'abord, sinon
+  -- repli sur load du contenu lu via io.open (certains environnements
+  -- n'ont pas de dofile fichier fiable).
+  local function loadSuite(path)
+    local ok, listed = pcall(dofile, path)
+    if ok and type(listed) == "table" then return listed end
+    local f = io.open(path, "r")
+    if not f then return nil end
+    local data = f:read("*a")
+    f:close()
+    local chunk = load(data, "@" .. path)
+    if not chunk then return nil end
+    local ok2, res = pcall(chunk)
+    if ok2 and type(res) == "table" then return res end
+    return nil
+  end
+  for _, base in ipairs({root, "./", "../"}) do
+    local listed = loadSuite(base .. "tests/suite.lua")
+    if listed then projectTests = listed break end
+  end
+  -- La racine peut etre "./" ou un chemin relatif incomplet selon le
+  -- lanceur : on resout chaque test en essayant root, ./ et ../.
+  local function findTestFile(t)
+    local rel = t:find("/") and (t .. ".lua") or ("tests/" .. t .. ".lua")
+    for _, base in ipairs({root, "./", "../"}) do
+      local f = io.open(base .. rel, "r")
+      if f then f:close() return base end
+    end
+    return nil
   end
   for _, t in ipairs(projectTests) do
-    local f = io.open(root .. "tests/" .. t .. ".lua", "r")
-    if f then
-      f:close()
+    if findTestFile(t) then
       table.insert(suites, {"project/" .. t:gsub("_test", ""), t})
     end
   end

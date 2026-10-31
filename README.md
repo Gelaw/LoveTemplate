@@ -4,6 +4,22 @@ Template de projet [LÖVE](https://love2d.org/) (Lua) prêt pour le web, basé s
 [love.js](https://github.com/Davidobot/love.js) (port Emscripten/WebAssembly
 de LÖVE 11.5).
 
+## Quickstart (5 minutes)
+
+```bash
+git clone <ce repo> monjeu && cd monjeu
+scripts/run.sh            # lance le jeu en desktop (nécessite love 11.x)
+# ... éditez game/setup.lua : c’est le SEUL fichier prévu pour votre jeu ...
+scripts/test.sh           # valide que votre game/ ne casse pas le moteur
+scripts/web.sh monjeu     # build web -> dist/web/
+scripts/serve.sh          # puis ouvrir http://localhost:8000
+```
+
+Règle d’or : vous ne modifiez **que** `game/` et `tests/`. `.engine/` (moteur)
+et `scripts/` (outillage) restent figés — un merge depuis l’upstream du
+template restera sans conflit. Voir `examples/snake/` pour un mini-jeu
+complet (logique pure testable + rendu + manette + letterbox).
+
 ## Choix de l'integration web
 
 Trois options ont ete considerees :
@@ -39,6 +55,7 @@ LoveTemplate/
 │   ├── setup.lua            #   ★ config fenêtre + initialisation du gameplay
 │   └── state.lua            #   exemple : état de jeu pur (score, vies)
 ├── tests/                   # ★ VOS tests (dépendent de game/ ; voir tests/README.md)
+│   └── suite.lua            #   liste des tests projet charges par scripts/test.sh
 ├── scripts/                 # outillage (build/run/test/lint, ne pas toucher)
 │   ├── run.sh               #   lance le jeu (dev)
 │   ├── check.sh             #   syntaxe de tous les .lua (luac -p)
@@ -66,6 +83,7 @@ LoveTemplate/
 │       ├── adapter/
 │       │   └── love2d.lua   #     SEUL fichier touchant love.*
 │       └── tests/           #   tests DU MOTEUR (unit/golden/intégration)
+├── examples/                # mini-jeux d’exemple complets (voir examples/snake/)
 ├── .luacheck.lua            # config du linter
 ├── .gitignore
 └── README.md
@@ -207,9 +225,28 @@ hebergeur statique (GitHub Pages, itch.io, Netlify...). Sur itch.io, cochez
 - `audioManager:loadSoundEffect(name, path)` / `:playSound(sound)` /
   `:toggleMuteSE()` / `:changeSEVolume(v)`
 
+### Sprites (images)
+- Entité avec `image = core.api().newImage("src/mon.png")` : rendue par le
+  dessin par défaut de `core.entities` (`w`/`h` = taille cible, sinon taille
+  native centrée ; `scale` pour zoomer en plus).
+
+### Persistance
+- `state.save(s, "fichier.txt")` / `state.load(s, "fichier.txt")` (exemple
+  `game/state.lua`) : sérialisation via `domain.serialize` (pur, testable),
+  écriture via `core.api().writeFile` = `love.filesystem.write` (marche
+  desktop **et** web).
+
+### Affichage fenêtre
+- `core.engine.letterbox = true` + `core.engine.virtualWidth/virtualHeight`
+  (960x540 par défaut) : le rendu est centré et mis à l’échelle dans la
+  fenêtre avec bandes noires — un HUD en coordonnées fixes n’est jamais coupé.
+
 ### Animations
 
 ### Divers
+- `addPadBind(button, action)` / `getPadBindOf(action)` — bindings manette
+  (boutons LÖVE : `"a"`, `"dpup"`, `"leftshoulder"`…) ; `isBindDown` fait
+  l’union clavier + manette. Fonctionne desktop et web.
 - `addBind(key, action)` / `getBindOf(action)` / `isBindDown(action)` —
   bindings clavier en TOUCHES (lettre produite : "z" = Z sur AZERTY).
   Approche volontairement naïve : les scancodes (position physique) se
