@@ -58,6 +58,7 @@ LoveTemplate/
 │   └── suite.lua            #   liste des tests projet charges par scripts/test.sh
 ├── scripts/                 # outillage (build/run/test/lint, ne pas toucher)
 │   ├── run.sh               #   lance le jeu (dev)
+│   ├── watch.sh             #   relance auto le jeu quand un .lua change
 │   ├── check.sh             #   syntaxe de tous les .lua (luac -p)
 │   ├── test.sh              #   suite de tests (lua pur, aucun LÖVE requis)
 │   ├── lint.sh              #   lint statique (luacheck, config .luacheck.lua)
@@ -163,6 +164,7 @@ Si le RPM `love` de votre Fedora est trop ancien, le RPM officiel
 ```bash
 # 1. Dev : lancer le jeu
 scripts/run.sh
+scripts/watch.sh            # idem, mais relance auto a chaque sauvegarde de .lua
 
 # 2. Verifier la syntaxe
 scripts/check.sh
@@ -206,8 +208,13 @@ hebergeur statique (GitHub Pages, itch.io, Netlify...). Sur itch.io, cochez
 - `cameraShake(intensite, duree)` — secousses
 
 ### Entites
-- `table.insert(entities, entite)` — champs : `x, y, w, h, angle, shape,
-  color, update(dt), draw(), collide(other), terminated`
+- `core.entities.add(entite)` — champs : `x, y, w, h, angle, shape,
+  color, update(dt), draw(), collide(other), terminated` (mettre
+  `terminated = true` dans un callback le retire au prochain update)
+- `core.entities.remove(e)` / `core.entities.each(fn)` (itère sur un
+  snapshot, safe si la liste change) / `core.entities.find(pred)` —
+  ex. taguer `tag = "player"` puis
+  `core.entities.find(function(e) return e.tag == "player" end)`
 - Collisions par intersection des segments des hitboxes (pas de detection
   quand une entite est entierement dans une autre)
 
@@ -216,8 +223,12 @@ hebergeur statique (GitHub Pages, itch.io, Netlify...). Sur itch.io, cochez
   timeLeft, color`, callback optionnel `onTermination()`
 
 ### UI
-- `table.insert(uis, element)` — champs : `x, y, w, h, hidden, children,
-  draw(), onClick(), onPress(), tooltip` (avec `drawTooltip()`)
+- `core.ui.add(element)` — champs : `x, y, w, h, hidden, children,
+  draw(), onClick(), onPress(), tooltip`
+- Widgets prêts à l’emploi : `core.ui.button(x, y, w, h, text, {onClick=...})`
+  (hover auto) et `core.ui.label(x, y, text, {align=...})`
+- `core.engine.mouseX, mouseY` — dernière position souris (écran), mise à
+  jour par l’adapter ; utile pour du hover custom
 
 ### Audio
 - `audioManager:loadMusic(name, path)` / `:playMusic(music)` /
@@ -304,3 +315,27 @@ car le backend graphique est mocké et le RNG est injecté/seedé :
   requis, elle tourne telle quelle desktop et web.
 - Pour un jeu reel, remplacez `projectSetup()` et ajoutez vos assets dans
   `src/` (ils seront inclus dans le `.love` puis dans le `.data` web).
+
+
+## FAQ prototypage
+
+**Q : ma boucle de jeu tourne à 60 fps fixe, comment faire un pas de temps variable ?**
+R : `engine.addUpdateFunction(function(dt) ... end)` reçoit déjà `dt` en secondes
+(flottant). Accumulez-le (`acc = acc + dt; while acc >= STEP do ... end`) comme dans
+`examples/snake/snake_setup.lua`.
+
+**Q : je veux un écran menu / pause / gameover.**
+R : un simple champ `mode = "menu"|"play"|"gameover"` dans votre `game/state.lua`,
+testé par vos `addUpdateFunction`/`addDrawFunction`. Voir le pattern gameover+restart
+de `examples/snake/`.
+
+**Q : comment déboguer en web ?**
+R : `scripts/web.sh` + `scripts/serve.sh`, puis F12. Depuis cette version, une erreur
+Lua s’affiche aussi **dans le canvas** (`love.errorhandler` dans `game/main.lua`).
+
+**Q : relancer le jeu à chaque sauvegarde, c’est pénible.**
+R : `scripts/watch.sh` (surveille les mtimes, sans dépendance).
+
+**Q : fullscreen / écran retina ?**
+R : ajoutez `fullscreen = true` / `highdpi = true` / `msaa = 8` dans `setup.config`
+(`game/setup.lua`) — passé à `love.conf` et à `love.window.setMode`.
