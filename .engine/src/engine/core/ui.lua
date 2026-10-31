@@ -41,7 +41,11 @@ function ui.draw()
     ui.drawElementAndChildren(element)
   end
   if ui.mouseover then
-    ui.mouseover:drawTooltip()
+    if ui.mouseover.drawTooltip then
+      ui.mouseover:drawTooltip()
+    else
+      ui.defaultDrawTooltip(ui.mouseover)
+    end
   end
 end
 
@@ -102,6 +106,62 @@ function ui.mouseRelease(x, y, button)
   end
   ui.pressed = nil
   return (element ~= nil)
+end
+
+-- ============================================================
+-- Widgets prets a l'emploi (construits sur ui.add + hit-test) :
+-- label (texte) et button (rectangle + texte + onClick + hover).
+-- ============================================================
+
+-- Label : texte simple en (x, y). opts: color, w (largeur de wrap pour
+-- "center"/"right"), align ("left"/"center"/"right").
+function ui.label(x, y, text, opts)
+  opts = opts or {}
+  local el = {
+    x = x, y = y, w = opts.w or 400, h = opts.h or 20,
+    text = text, color = opts.color or {1, 1, 1}, align = opts.align or "left",
+    draw = function(self)
+      local api = core.api()
+      if self.color then api.setColor(self.color) end
+      api.printf(self.text, self.x, self.y, self.w, self.align)
+    end,
+  }
+  return ui.add(el)
+end
+
+-- Button : rectangle + texte centre + onClick + hover (couleur changee).
+-- opts: color (fond), hoverColor, textColor, onClick.
+function ui.button(x, y, w, h, text, opts)
+  opts = opts or {}
+  local el = {
+    x = x, y = y, w = w, h = h,
+    text = text,
+    color = opts.color or {0.25, 0.45, 0.8},
+    hoverColor = opts.hoverColor or {0.35, 0.55, 0.95},
+    textColor = opts.textColor or {1, 1, 1},
+    onClick = opts.onClick,
+    draw = function(self)
+      local api = core.api()
+      local isHover = core.engine.mouseX and core.ui.getElementOn(core.engine.mouseX, core.engine.mouseY) == self
+      api.setColor(isHover and self.hoverColor or self.color)
+      api.rectangle("fill", self.x, self.y, self.w, self.h)
+      api.setColor(self.textColor)
+      api.printf(self.text, self.x, self.y + self.h / 2 - 6, self.w, "center")
+    end,
+  }
+  return ui.add(el)
+end
+
+-- Tooltip par defaut pour un element : affiche element.tooltip en
+-- dessous de la souris (utilise par ui.draw si element.tooltip existe).
+function ui.defaultDrawTooltip(element)
+  local api = core.api()
+  if not element.tooltip then return end
+  local mx, my = core.engine.mouseX or 0, core.engine.mouseY or 0
+  api.setColor(0.1, 0.1, 0.12, 0.9)
+  api.rectangle("fill", mx + 12, my + 12, 8 + #element.tooltip * 6, 18)
+  api.setColor(1, 1, 1)
+  api.print(element.tooltip, mx + 16, my + 15)
 end
 
 return ui
