@@ -14,6 +14,11 @@ function love.conf(t)
   t.window.height = config.height or 540
   t.window.resizable = config.resizable ~= false
   t.window.vsync = config.vsync or 1
+  -- Pass-through optionnel depuis setup.config (tous faux/nil par defaut) :
+  if config.fullscreen then t.window.fullscreen = true end
+  if config.highdpi then t.window.highdpi = true end
+  if config.msaa then t.window.msaa = config.msaa end
+  if config.display then t.window.display = config.display end
   -- IMPORTANT (compatibilité web) : le paquet npm love.js embarque
   -- LÖVE 11.4. Si t.version est supérieur (ex. "11.5"), le jeu affiche
   -- un avertissement "may not be compatible" au lancement dans le

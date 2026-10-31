@@ -72,6 +72,8 @@ function adapter.boot(projectSetup, config)
     love.window.setMode(config.width, config.height, {
       resizable = config.resizable,
       vsync = config.vsync,
+      fullscreen = config.fullscreen == true,
+      highdpi = config.highdpi == true,
     })
   end
   api.setFont(api.newFont(11))
