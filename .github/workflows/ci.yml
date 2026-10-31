@@ -16,7 +16,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lua: [lua5.1, luajit]
+        # lua5.1/luajit : semantique 5.1 (cible love.js) ;
+        # lua5.4 : attrape les divergences 5.1 -> 5.4 dans le code d'un fork
+        lua: [lua5.1, luajit, lua5.4]
     name: check + tests (${{ matrix.lua }})
     steps:
       - uses: actions/checkout@v4
@@ -27,6 +29,9 @@ jobs:
           if [ "${{ matrix.lua }}" = "lua5.1" ]; then
             sudo apt-get install -y lua5.1
             echo "LUA=lua5.1" >> "$GITHUB_ENV"
+          elif [ "${{ matrix.lua }}" = "lua5.4" ]; then
+            sudo apt-get install -y lua5.4
+            echo "LUA=lua5.4" >> "$GITHUB_ENV"
           else
             sudo apt-get install -y luajit
             echo "LUA=luajit" >> "$GITHUB_ENV"

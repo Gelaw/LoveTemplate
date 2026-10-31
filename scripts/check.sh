@@ -17,7 +17,7 @@ else
 fi
 
 fail=0
-for f in $(find game tests .engine -name '*.lua' | sort); do
+for f in $(find game tests examples .engine -name '*.lua' | sort); do
   if [ "$CHECK_CMD" = "luajit -b" ]; then
     # luajit -b fichier /dev/null : vérifie la syntaxe, jette le bytecode
     if luajit -b "$f" /dev/null 2>/tmp/luac_err.txt; then

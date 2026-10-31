@@ -38,3 +38,22 @@ function love.keypressed(...)        adapter.keypressed(...) end
 function love.mousepressed(...)      adapter.mousepressed(...) end
 function love.mousereleased(...)     adapter.mousereleased(...) end
 function love.mousemoved(...)        adapter.mousemoved(...) end
+
+-- Error handler : en web (love.js), une erreur Lua n'apparait que dans
+-- la console du navigateur, invisible pour un prototyper. On l'affiche
+-- a l'ecran (fond sombre + texte rouge + stacktrace) pour la voir
+-- directement dans le canvas, desktop comme web.
+function love.errorhandler(msg)
+  local trace = debug.traceback(tostring(msg), 2)
+  return function()
+    love.graphics.origin()
+    love.graphics.setBackgroundColor(0.1, 0.05, 0.05)
+    love.graphics.setColor(1, 0.3, 0.3)
+    love.graphics.printf("ERREUR Lua :", 20, 20, love.graphics.getWidth() - 40)
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.printf(trace, 20, 60, love.graphics.getWidth() - 40, "left", 0, 1, 1.2)
+    love.graphics.setColor(0.7, 0.7, 0.7)
+    love.graphics.print("(desktop : Ctrl+C / fermeture fenetre pour quitter ; web : rechargez la page)", 20, love.graphics.getHeight() - 30)
+    love.graphics.present()
+  end
+end

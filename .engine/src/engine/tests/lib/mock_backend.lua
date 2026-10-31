@@ -17,6 +17,7 @@ function mock.new(config)
     drawCount = 0,
     quitters = 0,
     held = config.held or {}, -- touches tenues (isKeyDown) : table clé -> vrai
+    padHeld = config.padHeld or {}, -- boutons manette tenus (isPadDown)
     loadedFiles = config.loadedFiles or {}, -- nom -> chunk (pour loadFile)
   }
 
@@ -45,6 +46,13 @@ function mock.new(config)
     circle = function(mode, x, y, r) record("circle", mode) end,
     print = function(text, x, y) record("print", tostring(text)) end,
     newFont = function(size) return {mock = true} end,
+    newImage = function(path)
+      return {
+        mockImage = true, path = path,
+        getWidth = function() return 32 end,
+        getHeight = function() return 32 end,
+      }
+    end,
     setFont = function(f) record("setFont") end,
     setBackgroundColor = function(r, g, b) record("setBg") end,
     getWidth = function() return m.width end,
@@ -52,18 +60,27 @@ function mock.new(config)
     newQuad = function(x, y, w, h, sw, sh)
       return {x = x, y = y, w = w, h = h}
     end,
-    draw = function(img, quad, x, y) record("draw") end,
+    draw = function(img, x, y, r, sx, sy) record("draw", tostring(x), tostring(sx)) end,
     getTime = function() return m.time end,
     -- polling clavier (le VRAI chemin de lecture : isBindDown -> isKeyDown
     -- -> love.keyboard.isDown en prod). Les tests pilotent m.held pour
     -- simuler des touches tenues.
     isKeyDown = function(key) return m.held[key] == true end,
+    isPadDown = function(button) return m.padHeld[button] == true end,
     setFullscreenMode = function() record("setMode") end,
     quit = function() m.quitters = m.quitters + 1 end,
     loadFile = function(name)
       local chunk = m.loadedFiles[name]
       if chunk then return chunk end
       error("fichier introuvable dans le mock: " .. name)
+    end,
+    readFile = function(name)
+      return m.files and m.files[name] or nil
+    end,
+    writeFile = function(name, data)
+      m.files = m.files or {}
+      m.files[name] = data
+      return true
     end,
     newSource = function(path, type)
       return {

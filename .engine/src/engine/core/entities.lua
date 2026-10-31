@@ -37,7 +37,10 @@ function entities.draw(width, height, camera)
   end
 end
 
--- Dessin par défaut (formes vectorielles) via le backend.
+-- Dessin par défaut : image (entity.image, chargee via
+-- api.newImage("src/mon.png")) ou formes vectorielles, via le backend.
+-- Pour une image, w/h etirent le sprite a cette taille (sinon taille
+-- native centrée) ; entity.scale zoom en plus.
 function entities.defaultDraw(entity)
   local api = core.api()
   if entity.color then
@@ -47,7 +50,19 @@ function entities.defaultDraw(entity)
   end
   api.translate(entity.x, entity.y)
   if entity.angle then api.rotate(entity.angle) end
-  if entity.shape == "rectangle" then
+  if entity.image then
+    local scale = entity.scale or 1
+    if scale ~= 1 then api.scale(scale, scale) end
+    local w = entity.w or entity.width
+    local h = entity.h or entity.height
+    if w and h then
+      api.draw(entity.image, -w / 2, -h / 2, 0,
+        w / entity.image:getWidth(), h / entity.image:getHeight())
+    else
+      api.draw(entity.image, -(entity.image:getWidth() / 2) * scale,
+        -(entity.image:getHeight() / 2) * scale)
+    end
+  elseif entity.shape == "rectangle" then
     local w, h = entity.w or entity.width, entity.h or entity.height
     api.rectangle("fill", -w / 2, -h / 2, w, h)
   elseif entity.shape == "circle" then

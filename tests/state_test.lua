@@ -4,6 +4,7 @@
 -- les règles métier (vies, score, gameover) sans moteur du tout.
 --------------------------------------------------------------------
 local harness = require("engine.tests.lib.harness")
+local mock = require("engine.tests.lib.mock_backend")
 
 local state = require("state")
 
@@ -67,6 +68,45 @@ harness.describe("game.state (exemple projet)", function()
     harness.assert_eq(s.score, 0)
     harness.assert_eq(s.lives, 3)
     harness.assert_false(s.gameover)
+  end)
+end)
+
+harness.describe("game.state persistance (save/load via backend)", function()
+
+  local m = mock.new()
+  core.attach(m.backend)
+
+  harness.it("serialize produit un texte deterministe", function()
+    local s = state.new({score = 10, lives = 2})
+    harness.assert_eq(state.serialize(s),
+      '{"events"={},"gameover"=false,"level"=1,"lives"=2,"score"=10,"time"=0}')
+  end)
+
+  harness.it("save puis load restaure l'état (round-trip fichier)", function()
+    local s = state.new({score = 250, lives = 1})
+    state.update(s, 3.5)
+    local ok = state.save(s, "savegame.txt")
+    harness.assert_true(ok)
+    local s2 = state.new()
+    local loaded = state.load(s2, "savegame.txt")
+    harness.assert_true(loaded == s2)
+    harness.assert_eq(s2.score, 250)
+    harness.assert_eq(s2.lives, 1)
+    harness.assert_approx(s2.time, 3.5)
+  end)
+
+  harness.it("load sur fichier absent : nil + message, pas de crash", function()
+    local s = state.new()
+    local res, err = state.load(s, "inexistant.txt")
+    harness.assert_true(res == nil)
+    harness.assert_true(type(err) == "string")
+  end)
+
+  harness.it("load sur fichier corrompu : nil + message, pas de crash", function()
+    m.files = {bad = "{pas du tout valide = ???}"}
+    local s = state.new()
+    local res = state.load(s, "bad")
+    harness.assert_true(res == nil)
   end)
 end)
 

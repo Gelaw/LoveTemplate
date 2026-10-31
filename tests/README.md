@@ -30,8 +30,10 @@ end)
 return harness
 ```
 
-et déclarez-le dans `.engine/src/engine/tests/run.lua` (suite `project`),
-ou dans votre propre runner copié depuis celui du template.
+et ajoutez simplement `"mon_test"` dans `tests/suite.lua` : le runner du
+template charge cette liste automatiquement. **Aucun fichier de
+`.engine/` n’a besoin d’être modifié** (repli sur une liste interne si
+`tests/suite.lua` est absent).
 
 ## Familles de tests (rappel)
 

@@ -57,6 +57,43 @@ harness.describe("core.engine", function()
     harness.assert_eq(order[2], "haut")
     harness.assert_true(m2.count("push") >= 2)
   end)
+
+  harness.it("letterbox inactif par defaut : pas d'origin/setBackgroundColor de letterbox", function()
+    local m2 = mock.new({width = 960, height = 540})
+    core.attach(m2.backend)
+    engine.width, engine.height = 960, 540
+    engine.letterbox = nil
+    m2.reset()
+    engine.draw()
+    harness.assert_eq(m2.count("origin"), 0)
+    harness.assert_eq(m2.count("setBg"), 0)
+  end)
+
+  harness.it("letterbox actif : origin + scale(min) + centrage, fond noir", function()
+    local m2 = mock.new({width = 1920, height = 540}) -- canvas 2x plus large
+    core.attach(m2.backend)
+    engine.width, engine.height = 1920, 540
+    engine.virtualWidth, engine.virtualHeight = 960, 540
+    engine.letterbox = true
+    m2.reset()
+    engine.draw()
+    harness.assert_true(m2.count("origin") >= 1)
+    harness.assert_true(m2.count("scale") >= 1)
+    harness.assert_true(m2.count("setBg") >= 1)
+    -- scale = min(1920/960, 540/540) = 1 ; centrage x = (1920-960*1)/2 = 480
+    local saw480 = false
+    for _, entry in ipairs(m2.log) do
+      if entry:find("translate%(480") then saw480 = true end
+    end
+    harness.assert_true(saw480)
+    engine.letterbox = nil
+  end)
+
+  harness.it("engine.init remet letterbox a nil", function()
+    engine.letterbox = true
+    engine.init(function() end)
+    harness.assert_nil(engine.letterbox)
+  end)
 end)
 
 return harness

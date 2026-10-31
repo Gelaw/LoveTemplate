@@ -18,8 +18,9 @@ local function import(module)
   return require("engine.domain." .. module)
 end
 
-domain.mathx    = import("mathx")
-domain.geometry = import("geometry")
+domain.mathx     = import("mathx")
+domain.geometry  = import("geometry")
+domain.serialize = import("serialize")
 
 -- Helper historique : copie les champs de params dans t.
 function domain.applyParams(t, params)
