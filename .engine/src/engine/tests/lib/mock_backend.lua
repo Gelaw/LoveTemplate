@@ -45,6 +45,13 @@ function mock.new(config)
     circle = function(mode, x, y, r) record("circle", mode) end,
     print = function(text, x, y) record("print", tostring(text)) end,
     newFont = function(size) return {mock = true} end,
+    newImage = function(path)
+      return {
+        mockImage = true, path = path,
+        getWidth = function() return 32 end,
+        getHeight = function() return 32 end,
+      }
+    end,
     setFont = function(f) record("setFont") end,
     setBackgroundColor = function(r, g, b) record("setBg") end,
     getWidth = function() return m.width end,
@@ -52,7 +59,7 @@ function mock.new(config)
     newQuad = function(x, y, w, h, sw, sh)
       return {x = x, y = y, w = w, h = h}
     end,
-    draw = function(img, quad, x, y) record("draw") end,
+    draw = function(img, x, y, r, sx, sy) record("draw", tostring(x), tostring(sx)) end,
     getTime = function() return m.time end,
     -- polling clavier (le VRAI chemin de lecture : isBindDown -> isKeyDown
     -- -> love.keyboard.isDown en prod). Les tests pilotent m.held pour

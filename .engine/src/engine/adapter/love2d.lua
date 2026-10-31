@@ -23,6 +23,7 @@ function adapter.buildBackend()
     circle       = function(...) g.circle(...) end,
     print        = function(...) g.print(...) end,
     newFont      = function(...) return g.newFont(...) end,
+    newImage     = function(path) return g.newImage(path) end,
     setFont      = function(f) g.setFont(f) end,
     setBackgroundColor = function(...) g.setBackgroundColor(...) end,
     getWidth     = function() return g.getWidth() end,
