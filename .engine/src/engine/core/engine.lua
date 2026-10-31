@@ -10,6 +10,12 @@ local engine = {
   bindings = {},  -- action -> touche
   width = 0, height = 0,
   projectSetup = nil, -- fourni par main.lua (logique spécifique projet)
+  -- Letterbox : nil (defaut, comportement historique) ou true pour
+  -- adapter le rendu a la fenetre (voir engine.draw). virtualWidth/
+  -- virtualHeight = resolution de reference du jeu (960x540 par defaut).
+  letterbox = nil,
+  virtualWidth = 960,
+  virtualHeight = 540,
 }
 
 for i = 1, 9 do engine.draws[i] = {} end
@@ -79,6 +85,8 @@ function engine.init(setup)
   engine.updates = {}
   engine.bindings = {}
   engine.simTime = 0
+  -- letterbox remis a nil : un init doit rester reproductible
+  engine.letterbox = nil
   -- caméra remise à zéro : un init doit être totalement reproductible
   -- (les tests manipulent camera.scale/mode, il ne faut pas qu'ils fuient
   -- dans les snapshots suivants)
@@ -119,9 +127,24 @@ function engine.update(dt)
 end
 
 -- Une frame de rendu : transformation caméra puis tous les calques.
+-- Si engine.letterbox est actif, le monde (taille virtuelle
+-- engine.virtualWidth x engine.virtualHeight, ex. 960x540) est d'abord
+-- centré et mis à l'échelle pour tenir dans le canvas réel, avec des
+-- bandes noires autour : le HUD en coordonnées fixes n'est jamais coupé.
 function engine.draw()
   local api = core.api()
-  api.translate(engine.width / 2, engine.height / 2)
+  if engine.letterbox then
+    local s = math.min(engine.width / engine.virtualWidth,
+                       engine.height / engine.virtualHeight)
+    api.origin()
+    api.setBackgroundColor(0, 0, 0)
+    api.translate((engine.width - engine.virtualWidth * s) / 2,
+                  (engine.height - engine.virtualHeight * s) / 2)
+    api.scale(s, s)
+    api.translate(engine.virtualWidth / 2, engine.virtualHeight / 2)
+  else
+    api.translate(engine.width / 2, engine.height / 2)
+  end
   core.camera:apply()
   for l, layer in pairs(engine.draws) do
     for d, draw in pairs(layer) do
