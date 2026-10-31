@@ -72,6 +72,14 @@ function mock.new(config)
       if chunk then return chunk end
       error("fichier introuvable dans le mock: " .. name)
     end,
+    readFile = function(name)
+      return m.files and m.files[name] or nil
+    end,
+    writeFile = function(name, data)
+      m.files = m.files or {}
+      m.files[name] = data
+      return true
+    end,
     newSource = function(path, type)
       return {
         mockSource = true, path = path, type = type,

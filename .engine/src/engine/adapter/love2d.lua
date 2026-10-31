@@ -39,6 +39,8 @@ function adapter.buildBackend()
     quit         = function() love.event.quit() end,
     -- fichiers
     loadFile     = function(name) return love.filesystem.load(name) end,
+    readFile     = function(name) return love.filesystem.read(name) end,
+    writeFile    = function(name, data) return love.filesystem.write(name, data) end,
     -- audio
     newSource     = function(path, type) return love.audio.newSource(path, type) end,
     pauseAll      = function() love.audio.pause() end,

@@ -60,4 +60,29 @@ function state.reset(s, params)
   return s
 end
 
+-- Sérialise l'état en texte (domain.serialize, pur et testable).
+function state.serialize(s)
+  return domain.serialize.encode(s)
+end
+
+-- Sauvegarde l'état dans un fichier via le backend (core.api().writeFile).
+-- En prod : love.filesystem.write (marche desktop ET web love.js).
+-- Retourne true si écrit, false + message sinon.
+function state.save(s, filename)
+  local ok, err = pcall(core.api().writeFile, filename, state.serialize(s))
+  if not ok then return false, err end
+  return true
+end
+
+-- Recharge l'état depuis un fichier. Retourne l'état restauré dans s,
+-- ou nil + message si le fichier est absent/illisible.
+function state.load(s, filename)
+  local data = core.api().readFile(filename)
+  if not data then return nil, "fichier absent : " .. filename end
+  local ok, decoded = pcall(domain.serialize.decode, data)
+  if not ok or type(decoded) ~= "table" then return nil, "fichier illisible : " .. filename end
+  for k, v in pairs(decoded) do s[k] = v end
+  return s
+end
+
 return state
