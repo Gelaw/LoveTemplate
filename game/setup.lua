@@ -28,11 +28,14 @@ function setup.run()
   engine.addBind("s", "down")
   engine.addBind("d", "right")
 
-  -- Joueur (démo) : remplacez par vos propres entités
+  -- Joueur (démo) : remplacez par vos propres entités.
+  -- tag = "player" : on le retrouve ensuite via core.entities.find(...)
+  -- au lieu de supposer un index dans la liste.
   local player = core.entities.add({
     x = 0, y = 0, w = 40, h = 40, shape = "rectangle",
     color = {0.2, 0.9, 0.4},
     speed = 260,
+    tag = "player",
     update = function(self, dt)
       local dx, dy = 0, 0
       -- isBindDown : union du suivi événementiel et du polling isDown.
@@ -61,13 +64,8 @@ function setup.run()
     })
   end
 
-  -- HUD de démo
-  engine.addDrawFunction(function()
-    local api = core.api()
-    api.origin()
-    api.setColor(1, 1, 1)
-    api.print("ZQSD pour bouger, touchez les caisses.", 12, 12)
-  end, 9)
+  -- HUD de démo : widget label (calque 9 = coordonnées écran)
+  core.ui.label(12, 12, "ZQSD pour bouger, touchez les caisses.")
 
   -- Émetteur de particules de démo
   local sparkTimer = 0

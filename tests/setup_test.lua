@@ -34,6 +34,7 @@ harness.describe("projet : game/setup.lua (intégration)", function()
     harness.assert_true(#core.engine.draws[5] >= 1) -- calque entités
     harness.assert_true(#core.engine.draws[6] >= 1) -- calque particules
     harness.assert_true(#core.engine.draws[9] >= 1) -- calque UI/HUD
+    harness.assert_true(#core.ui.list >= 1) -- widget HUD (label) enregistre
     harness.assert_true(core.entities.count() >= 1)
   end)
 
@@ -62,7 +63,8 @@ harness.describe("projet : game/setup.lua (intégration)", function()
     local engine = core.engine
     m.held = {}
     engine.init(setup.run)
-    local player = core.entities.list[1]
+    local player = core.entities.find(function(e) return e.tag == "player" end)
+    harness.assert_true(player ~= nil)
     local y0 = player.y
     m.held["z"] = true -- up, via polling (le vrai chemin de prod)
     for i = 1, 30 do engine.update(1 / 60) end
