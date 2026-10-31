@@ -34,7 +34,11 @@ scripts/package.sh "$NAME"
 
 echo "--> Packaging web avec love.js (titre: ${NAME}, memoire: ${MEMORY} octets)..."
 rm -rf "$OUT_DIR"
-npx --yes love.js -t "$NAME" -m "$MEMORY" -c "$LOVE_FILE" "$OUT_DIR"
+# Version EPINGEE : `npx love.js` sans version recupererait le dernier
+# paquet npm a chaque build (builds non reproductibles entre forks/CI).
+# love.js embarque LÖVE 11.4 (voir README) ; 11.4.1 est la derniere
+# version publiee du paquet npm au moment de ce template.
+npx --yes love.js@11.4.1 -t "$NAME" -m "$MEMORY" -c "$LOVE_FILE" "$OUT_DIR"
 
 # love.js produit index.html + game.js + <nom>.data dans OUT_DIR
 echo ""
