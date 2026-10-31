@@ -49,6 +49,15 @@ end
 function adapter.boot(projectSetup, config)
   core.attach(adapter.buildBackend())
   local api = core.api()
+  -- CRITIQUE (inputs) : désactive le mode saisie texte/IME. Quand il est
+  -- actif (paramètre d'accessibilité du système, appui long → caractères
+  -- spéciaux...), l'IME consomme les touches avant le polling :
+  -- isDown("z")/isDown("s")/isDown("d") restent false pendant que
+  -- d'autres touches passent — symptôme vécu. Un jeu qui n'a pas de
+  -- champ de saisie ne doit JAMAIS laisser le text input actif ;
+  -- réactivez-le (love.keyboard.setTextInput(true)) autour d'un
+  -- éventuel champ texte, puis re-désactivez.
+  love.keyboard.setTextInput(false)
   if config then
     if config.title then love.window.setTitle(config.title) end
     love.window.setMode(config.width, config.height, {
