@@ -111,6 +111,37 @@ harness.describe("core.entities", function()
     harness.assert_eq(m2.count("rectangle"), 0)
   end)
 
+  harness.it("remove : retire l'entite du registre, true si presente", function()
+    core.entities.clear()
+    local e1 = core.entities.add({x = 0, y = 0, w = 1, h = 1})
+    local e2 = core.entities.add({x = 5, y = 5, w = 1, h = 1})
+    harness.assert_eq(core.entities.count(), 2)
+    harness.assert_true(core.entities.remove(e1))
+    harness.assert_eq(core.entities.count(), 1)
+    harness.assert_true(core.entities.list[1] == e2)
+    harness.assert_false(core.entities.remove(e1)) -- deja retiree
+  end)
+
+  harness.it("each : itere sur un snapshot (safe si modifie pendant)", function()
+    core.entities.clear()
+    core.entities.add({x = 0, y = 0, w = 1, h = 1})
+    core.entities.add({x = 5, y = 5, w = 1, h = 1})
+    local n = 0
+    core.entities.each(function(e)
+      n = n + 1
+      if n == 1 then core.entities.clear() end -- modifie la liste pendant l'iteration
+    end)
+    harness.assert_eq(n, 2) -- les 2 ont ete vus malgre le clear
+  end)
+
+  harness.it("find : retourne la 1re entite qui matche, nil sinon", function()
+    core.entities.clear()
+    core.entities.add({x = 0, y = 0, w = 1, h = 1, tag = "a"})
+    local b = core.entities.add({x = 5, y = 5, w = 1, h = 1, tag = "b"})
+    harness.assert_true(core.entities.find(function(e) return e.tag == "b" end) == b)
+    harness.assert_nil(core.entities.find(function(e) return e.tag == "z" end))
+  end)
+
   harness.it("draw image sans w/h : taille native centree, pas de rectangle", function()
     local m2 = mock.new()
     core.attach(m2.backend)
