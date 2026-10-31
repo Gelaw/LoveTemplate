@@ -72,7 +72,18 @@ if mode == "all" or mode == "integration" then
   table.insert(suites, {"integration/boot", "engine.tests.integration.boot_test"})
   table.insert(suites, {"integration/compat", "engine.tests.integration.compat_test"})
   -- Tests PROJET (dossier tests/ à la racine) : dépendent de game/
-  for _, t in ipairs({"setup_test", "state_test", "input_test"}) do
+  -- La liste des tests projet vit dans tests/suite.lua (cote PROJET) :
+  -- un fork ajoute tests/xxx_test.lua + une ligne la-bas, sans toucher
+  -- .engine/. Repli sur la liste historique si suite.lua est absent.
+  local projectTests = {"setup_test", "state_test", "input_test"}
+  local suitePath = root .. "tests/suite.lua"
+  local suiteFile = io.open(suitePath, "r")
+  if suiteFile then
+    suiteFile:close()
+    local ok, listed = pcall(dofile, suitePath)
+    if ok and type(listed) == "table" then projectTests = listed end
+  end
+  for _, t in ipairs(projectTests) do
     local f = io.open(root .. "tests/" .. t .. ".lua", "r")
     if f then
       f:close()
